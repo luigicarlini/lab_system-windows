@@ -1,6 +1,5 @@
 // You can use packages like papaparse for CSV or xlsx for Excel to read the data.
-// First, install the package: npm install xlsx:
-// npm install xlsx
+// First, install the package: npm install xlsx: npm install xlsx
 
 const XLSX = require('xlsx');
 const mongoose = require('mongoose');
@@ -11,7 +10,7 @@ const Instrument = require(path.join(__dirname, '..', 'models', 'Instrument'));
 
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/instrumentDB', {
+mongoose.connect('mongodb://127.0.0.1:27017/instrumentDB', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
