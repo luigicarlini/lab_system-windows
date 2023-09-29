@@ -1,0 +1,49 @@
+/* InstrumentList.css */
+.instrument-container {
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.instrument-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e1e4e8;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.instrument-attributes {
+    margin-bottom: 8px;
+}
+
+.attribute {
+    color: #586069;
+}
+
+.value {
+    margin-left: 8px;
+}
+
+.book-button {
+    background-color: #2ea44f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.book-button:disabled {
+    background-color: #d1d5da;
+    cursor: not-allowed;
+}
+
+.book-button:hover:not(:disabled) {
+    background-color: #2c974b;
+}
