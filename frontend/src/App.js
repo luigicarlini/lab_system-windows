@@ -21,7 +21,7 @@ const App = () => {
     const fetchUser = async () => {
       try {
         const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-        const response = await axios.get(`${BASE_URL}/user/me`);
+        const response = await axios.get(`${BASE_URL}/users/current`);
 
         if (response.data && response.data.user) {
           setUser(response.data.user);

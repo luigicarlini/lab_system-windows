@@ -6,17 +6,18 @@ import axios from 'axios';
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const getAllInstruments = async () => {
-  const response = await axios.get(`${BASE_URL}/instruments`);
+  const response = await axios.get(`${BASE_URL}/api/instruments`);
   return response.data;
 };
 
 export const bookInstrument = async (id, userId) => {
-  const response = await axios.post(`${BASE_URL}/instruments/book`, { id, userId });
+  // const response = await axios.post(`${BASE_URL}/instruments/book`, { id, userId });
+  const response = await axios.post(`${BASE_URL}/api/instruments/book/${id}`, { userId });
   return response.data;
 };
 
 export const getInstrumentStatus = async (id) => {
-  const response = await axios.get(`${BASE_URL}/instruments/${id}`);
+  const response = await axios.get(`${BASE_URL}/api/instruments/${id}`);
   return response.data;
 };
 

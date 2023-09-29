@@ -12,6 +12,8 @@ const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const { setUser } = useContext(UserContext);
   // const history = useHistory();
   const navigate  = useNavigate();   // <- Importing useNavigate instead of useHistory
@@ -21,20 +23,30 @@ const Register = () => {
 
     try {
       // Make an API call to register
-      const response = await axios.post(`${BASE_URL}/api/users/register`, {
+      const response = await axios.post(`${BASE_URL}/api/users/register`, {  // /api/users/register
         username,
         password,
         email,
       });
 
-      // Update the context with the user data
-      setUser(response.data.user);
+    if (response.status === 201) {
+        setSuccessMessage('Registration successful! You can now log in.');
+        setUsername('');
+        setPassword('');
+    }
+
+    // Update the context with the user data
+    setUser(response.data.user);
 
       // Redirect to home page or dashboard
       // history.push('/');
       navigate('/'); // <- Using navigate here
     } catch (error) {
-      console.error('Error during registration:', error);
+      if (error.response && error.response.data.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage('An unexpected error occurred during registration. Please try again later.');
+      }    
     }
   };
 
@@ -56,6 +68,8 @@ const Register = () => {
         </div>
         <button type="submit">Register</button>
       </form>
+      {errorMessage && <p style={{ color: 'red', fontWeight: 'bold' }}>{errorMessage}</p>}
+      {successMessage && <p style={{ color: 'green', fontWeight: 'bold' }}>{successMessage}</p>}
       <div>
         Already have an account? <Link to="/login">Login here</Link>  {/* Added this link section */}
       </div>

@@ -36,6 +36,7 @@ function InstrumentBooking() {
   
   const handleBooking = () => {
     api.post(`${BASE_URL}/instruments/book/${instrumentId}`, { ///Replace hardcoded URLs http://localhost:5000 with the BASE_URL.
+    //api.post(`${BASE_URL}/instruments/book`, {..., instrumentId: instrumentId})
       userId: user._id,
       startDate: bookingData.startDate,
       endDate: bookingData.endDate,

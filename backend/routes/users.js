@@ -37,27 +37,28 @@ router.post('/register', async (req, res) => {
 
 // POST /users/login: Authenticate user
 router.post('/login', async (req, res) => {
+  console.log("Received request:", req.body);
   const { username, password } = req.body;
+  console.log("Received login request for username:", username);
   const user = await User.findOne({ username });
   if (!user) {
-    return res.status(400).json({ message: 'User not found' });
+    return res.status(400).json({ message: 'Username not found' });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+  console.log("Password comparison result:", isMatch);
   if (isMatch) {
     const payload = { id: user.id, username: user.username };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 });
     res.status(200).json({ token });
   } else {
-    res.status(400).json({ message: 'Incorrect password' });
+    res.status(400).json({ message: 'Password is incorrect' });
   }
 });
 
 
 // GET /users/current: Return current user
-router.get(
-  '/current',
-  passport.authenticate('jwt', { session: false }),
+router.get('/current', passport.authenticate('jwt', { session: false }),
   (req, res) => {
     res.json(req.user);
   }

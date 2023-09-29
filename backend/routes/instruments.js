@@ -31,9 +31,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /instruments/book: Book an instrument
-router.post('/book', async (req, res) => {
+router.post('/book/:id', async (req, res) => {
   try {
-    const { userId, instrumentId, from, until } = req.body;
+    const { userId, from, until } = req.body;
+    const instrumentId = req.params.id;
     const user = await User.findById(userId);
     const instrument = await Instrument.findById(instrumentId);
 

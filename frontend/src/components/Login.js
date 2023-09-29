@@ -13,6 +13,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const { setUser } = useContext(UserContext);
 
   const handleLogin = async (e) => {
@@ -20,17 +21,22 @@ const Login = () => {
 
     try {
       // Real API call to validate user login
-      const response = await axios.post(`${BASE_URL}/api/users/login`, {
+      //C:\lab-booking-system-master\lab-booking-system-master\backend\routes
+      const response = await axios.post(`${BASE_URL}/api/users/login`, {  
         username: username,
         password: password,
       });
 
+      console.log('Attempting to login with:', { username, password });
+
       if (response.status === 200 && response.data.token) {
+        setSuccessMessage('Log in successful!');
         const user = {
           id: response.data.id,
           username: response.data.username,
           token: response.data.token,
         };
+
 
         setUser(user);
         // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
@@ -68,7 +74,8 @@ const Login = () => {
         </div>
         <button type="submit">Login</button>
       </form>
-      {errorMessage && <p>{errorMessage}</p>}
+      {errorMessage && <p style={{ color: 'red', fontWeight: 'bold' }}>{errorMessage}</p>}
+      {successMessage && <p style={{ color: 'green', fontWeight: 'bold' }}>{successMessage}</p>}
       <div>
         Don't have an account? <Link to="/register">Register here</Link>
       </div>

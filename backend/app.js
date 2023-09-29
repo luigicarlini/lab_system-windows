@@ -47,7 +47,7 @@ const userRoutes = require(path.join(__dirname, 'routes', 'users'));
 //const userRoutes = require('./routes/users');
 //const bookingRoutes = require('./routes/bookings');
 
-app.use('/api/instruments', instrumentRoutes);
+app.use('/api/instruments', instrumentRoutes);  // ? ==> change to app.use('/api/instruments', instrumentRoutes);
 app.use('/api/users', userRoutes);
 //app.use('/api/bookings', bookingRoutes);
 
