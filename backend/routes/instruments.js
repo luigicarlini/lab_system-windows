@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-
 // This will work on Windows, Linux, macOS, or any platform supported by Node.js
 const Instrument = require(path.join(__dirname, '..', 'models', 'Instrument'));
 const User = require(path.join(__dirname, '..', 'models', 'User'));
@@ -32,6 +31,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /instruments/book: Book an instrument
 router.post('/book/:id', async (req, res) => {
+  console.log('Entered the booking route handler');
   try {
     const { userId, from, until } = req.body;
     const instrumentId = req.params.id;
@@ -39,9 +39,11 @@ router.post('/book/:id', async (req, res) => {
     const instrument = await Instrument.findById(instrumentId);
 
     if (user && instrument) {
-      if (instrument.availability === 'available') {
-        instrument.availability = 'booked';
+      if (instrument.availability === 'Available') {
+        instrument.availability = 'Booked';
         instrument.bookedBy = user._id;
+        //You're destructuring from and until, but you're not sending these from the frontend. 
+        //Make sure to send from and until if they are required or handle their absence in the backend code.
         instrument.bookedFrom = from;
         instrument.bookedUntil = until;
         await instrument.save();

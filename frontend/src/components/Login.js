@@ -2,8 +2,7 @@
 // that calls setCurrentUser to populate the currentUser:
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // Added the Link import
-// import { UserContext } from '../context/UserContext';
+import { Link, useNavigate } from 'react-router-dom';  // Added useNavigate import here
 import UserContext from '../context/UserContext';
 
 
@@ -15,6 +14,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const { setUser } = useContext(UserContext);
+  const navigate = useNavigate();  // Initialize navigate
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,18 +28,20 @@ const Login = () => {
       });
 
       console.log('Attempting to login with:', { username, password });
+      console.log(response.data.payload);
+      console.log(response.data.payload.username);
+      console.log(response.data.payload.id);
+      console.log(response.data.token);
 
-      if (response.status === 200 && response.data.token) {
+      if (response.status === 200 && response.data.token) {  
         setSuccessMessage('Log in successful!');
-        const user = {
-          id: response.data.id,
-          username: response.data.username,
+        const user = {   
+          id: response.data.payload.id,
+          username: response.data.payload.username,
           token: response.data.token,
         };
-
-
-        setUser(user);
-        // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
+        setUser(user);             // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
+        navigate('/instruments');  // Redirect user to instruments after successful login
       }
     } catch (error) {
       if (error.response && error.response.data.message) {

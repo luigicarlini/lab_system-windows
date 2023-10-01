@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-// import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import UserContext from './context/UserContext';
-import Header from './components/Header'; // hypothetical Header component
-import Footer from './components/Footer'; // hypothetical Footer component
+import Header from './components/Header';
+import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
 import InstrumentList from './components/InstrumentList';
 import InstrumentBooking from './components/InstrumentBooking';
+import WelcomePage from './components/WelcomePage';
 import axios from 'axios';
 import './App.css';
+import UserContext from './context/UserContext';
 
 const App = () => {
-// const [user, setUser] = useState(null);
-// eslint-disable-next-line no-unused-vars
-  const [_, setUser] = useState(null);
+  const { setUser } = useContext(UserContext); 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +22,7 @@ const App = () => {
         const response = await axios.get(`${BASE_URL}/users/current`);
 
         if (response.data && response.data.user) {
-          setUser(response.data.user);
+          setUser(response.data.user);  // Here we update the context
         }
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -34,7 +32,7 @@ const App = () => {
     };
 
     fetchUser();
-  }, []);
+  }, [setUser]);  // Added setUser as a dependency since we are using it inside the useEffect
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -49,7 +47,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/instruments/:instrumentId" element={<InstrumentBooking />} />
           <Route path="/instruments" element={<InstrumentList />} />
-          <Route path="/" element={<InstrumentList />} />
+          <Route path="/" element={<WelcomePage />} />
         </Routes>
       </div>
       <Footer />

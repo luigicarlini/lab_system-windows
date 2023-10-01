@@ -2,7 +2,6 @@
 import React, { useState, useContext } from 'react';
 // import { useHistory } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';  // Added the Link import
-// import { UserContext } from '../context/UserContext';
 import UserContext from '../context/UserContext';
 import axios from 'axios';
 
@@ -20,7 +19,6 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
     try {
       // Make an API call to register
       const response = await axios.post(`${BASE_URL}/api/users/register`, {  // /api/users/register
@@ -36,11 +34,10 @@ const Register = () => {
     }
 
     // Update the context with the user data
-    setUser(response.data.user);
-
-      // Redirect to home page or dashboard
-      // history.push('/');
-      navigate('/'); // <- Using navigate here
+    setUser(response.data.username);
+    
+    // Redirect to instruments page after successful registration
+    navigate('/instruments'); // Modified this line
     } catch (error) {
       if (error.response && error.response.data.message) {
         setErrorMessage(error.response.data.message);

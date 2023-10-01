@@ -1,74 +1,124 @@
-/* App.css */
-
-/* General Styles */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* Header Styles */
-.header {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-}
-
-/* Footer Styles */
-.footer {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-  position: relative;
-  bottom: 0;
-  width: 100%;
-}
-
-/* Instrument List Styles */
-.instrument-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-}
-
-.instrument-card {
-  border: 1px solid #ccc;
-  padding: 20px;
-  margin: 20px;
-  width: calc(33.333% - 40px);
+/* Reset styles */
+* {
   box-sizing: border-box;
 }
 
-/* Instrument Booking Styles */
-.instrument-booking {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+body, h1, h2, h3, h4, p {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
 
-.instrument-booking-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+body {
+  background-color: #f6f8fa; /* GitHub's light gray background */
+  color: #24292e; /* GitHub's main text color */
 }
 
-/* Login and Register Styles */
-.login-form, .register-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin: auto;
-  width: 300px;
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
-.login-form input, .register-form input {
-  margin-bottom: 10px;
+/* Headers and Typography */
+h1, h2, h3, h4 {
+  margin-bottom: 16px;
+  font-weight: 600;
 }
+
+h1 {
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+h4 {
+  font-size: 18px;
+}
+
+p {
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* GitHub-like buttons */
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #2ea44f; /* GitHub's green button color */
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+button:hover {
+  background-color: #2a8f47;
+  border-color: #2a8f47;
+}
+
+button:active {
+  background-color: #279540;
+  border-color: #279540;
+}
+
+/* Links with GitHub's primary blue color */
+a {
+  color: #0366d6;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #0050a1;
+  text-decoration: underline;
+}
+
+/* GitHub-like form input */
+input, select, textarea {
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #24292e;
+  background-color: #fff;
+  border: 1px solid #e1e4e8; /* GitHub's border color for inputs */
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(225, 228, 232, 0.2);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #0366d6;
+  box-shadow: inset 0 1px 0 rgba(225, 228, 232, 0.2), 0 0 0 3px rgba(3, 102, 214, 0.3);
+  outline: none;
+}
+
+/* Generic error and success messages styles */
+.error-message, .success-message {
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  background-color: #ffdce0;
+  color: #86181d;
+  border: 1px solid #e1b4b8;
+}
+
+.success-message {
+  background-color: #e6ffed;
+  color: #1f6f3b;
+  border: 1px solid #a3dcb7;
+}
+
+/* Styles for other potential elements can be added based on your application's needs. */
+
+

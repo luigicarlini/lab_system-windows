@@ -50,7 +50,10 @@ router.post('/login', async (req, res) => {
   if (isMatch) {
     const payload = { id: user.id, username: user.username };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 });
-    res.status(200).json({ token });
+    res.status(200).json({
+      payload,
+      token
+    });
   } else {
     res.status(400).json({ message: 'Password is incorrect' });
   }

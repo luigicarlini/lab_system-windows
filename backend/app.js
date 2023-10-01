@@ -42,7 +42,7 @@ passportJWT(passport);
 // Import and use routes
 const instrumentRoutes = require(path.join(__dirname, 'routes', 'instruments'));
 const userRoutes = require(path.join(__dirname, 'routes', 'users'));
-
+//const bookingRoutes = require(path.join(__dirname, 'routes', 'bookings'));
 //const instrumentRoutes = require('./routes/instruments');
 //const userRoutes = require('./routes/users');
 //const bookingRoutes = require('./routes/bookings');

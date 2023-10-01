@@ -30,6 +30,7 @@ const InstrumentList = () => {
     }, []);
 
     const handleBookInstrument = async (id) => {
+        console.log("Attempting to book instrument with ID:", id);
         if (user) {
             const bookedInstrument = await bookInstrument(id, user._id);
             // Assuming the API returns a new status for the instrument after booking
@@ -39,40 +40,47 @@ const InstrumentList = () => {
         }
     };
 
-    // Future Use if we want to add a button to check the Status
+    //Future Use if we want to add a button to check the Status
     // const handleGetStatus = async (id) => {
     //     const status = await getInstrumentStatus(id);
     //     setInstrumentStatuses(prevStatuses => ({ ...prevStatuses, [id]: status.availability ? "Available" : "Booked" }));
     //     // setInstrumentStatuses(prevStatuses => ({ ...prevStatuses, [id]: status }));
     // };
+    console.log('Instrument Statuses:', instrumentStatuses);
 
     return (
         <div>
             {instruments.map((instrument) => (
-                <div key={instrument._id} style={{ marginBottom: '10px', border: '1px solid #014C8C', padding: '15px', borderRadius: '5px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#014C8C' }}>{instrument.instrumentName}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Status:</span> {instrumentStatuses[instrument._id] || "Unknown"}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Manufacturer:</span> {instrument.manufacturer}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Model:</span> {instrument.model}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Frequency Range:</span> {instrument.frequencyRange}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Description:</span> {instrument.description}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Booked by:</span> {instrument.bookedBy || "N/A"}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Booked from:</span> {instrument.bookedFrom || "N/A"}</div>
-                    <div><span style={{ fontWeight: 'bold' }}>Booked until:</span> {instrument.bookedUntil || "N/A"}</div>
-                    <button 
-                        disabled={instrumentStatuses[instrument._id] === 'Booked'}
-                        onClick={() => handleBookInstrument(instrument._id)}
-                        style={{ marginTop: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                        Book
-                    </button>
-                </div>
+            <div key={instrument._id} style={{ marginBottom: '10px', border: '1px solid #014C8C', padding: '15px', borderRadius: '5px' }}>
+            <div style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#014C8C' }}>{instrument.instrumentName}</div>
+            <div>
+             <span style={{ fontWeight: 'bold' }}>Status:</span> 
+             <span style={{
+                color: instrumentStatuses[instrument._id] === 'Booked' ? 'red' : instrumentStatuses[instrument._id] === 'Available' ? 'green' : 'black',
+                fontWeight: instrumentStatuses[instrument._id] === 'Booked' || instrumentStatuses[instrument._id] === 'Available' ? 'bold' : 'normal'
+             }}>
+                {instrumentStatuses[instrument._id] ? ` ${instrumentStatuses[instrument._id]}` : " Unknown"}
+             </span>
+            </div>
+                <div><span style={{ fontWeight: 'bold' }}>Manufacturer:</span> {instrument.manufacturer}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Model:</span> {instrument.model}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Frequency Range:</span> {instrument.frequencyRange}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Description:</span> {instrument.description}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Booked by:</span> {instrument.bookedBy || "N/A"}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Booked from:</span> {instrument.bookedFrom || "N/A"}</div>
+                <div><span style={{ fontWeight: 'bold' }}>Booked until:</span> {instrument.bookedUntil || "N/A"}</div>
+                {instrumentStatuses[instrument._id] === 'Available' && 
+                <button 
+                  onClick={() => handleBookInstrument(instrument._id)}
+                  style={{ marginTop: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                > 
+                Book
+                </button>
+                }
+            </div>
             ))}
         </div>
     );
 };
 
 export default InstrumentList;
-
-
-
