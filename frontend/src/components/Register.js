@@ -29,15 +29,14 @@ const Register = () => {
 
     if (response.status === 201) {
         setSuccessMessage('Registration successful! You can now log in.');
+        localStorage.setItem('showSuccessMessage', 'true');  // Set a flag in local storage
         setUsername('');
         setPassword('');
+        // setEmail('');
+        // Redirect to instruments/login page after successful registration
+        navigate('/login'); // Modified this line
     }
 
-    // Update the context with the user data
-    setUser(response.data.username);
-    
-    // Redirect to instruments page after successful registration
-    navigate('/instruments'); // Modified this line
     } catch (error) {
       if (error.response && error.response.data.message) {
         setErrorMessage(error.response.data.message);

@@ -20,7 +20,14 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
   .catch((err) => console.log(err));
 
 // Middleware for CORS, JSON parsing
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:3000',  // replace with your frontend server address
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Express Session Middleware

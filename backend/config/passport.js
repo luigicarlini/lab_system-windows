@@ -16,6 +16,7 @@ opts.secretOrKey = process.env.JWT_SECRET;
 module.exports = passport => {
   passport.use(
     new JwtStrategy(opts, (jwt_payload, done) => {
+      console.log("Payload received in strategy:", jwt_payload);
       User.findById(jwt_payload.id)
         .then(user => {
           if (user) {

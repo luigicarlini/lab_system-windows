@@ -1,6 +1,6 @@
 // To simulate a user login, you might have a login function in a different component 
 // that calls setCurrentUser to populate the currentUser:
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';  // Added useNavigate import here
 import UserContext from '../context/UserContext';
@@ -14,6 +14,16 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const { setUser } = useContext(UserContext);
+
+  useEffect(() => {
+    // Check if the flag is set in local storage
+    if (localStorage.getItem('showSuccessMessage') === 'true') {
+        setSuccessMessage('Registration successful! You can now log in.');
+        localStorage.removeItem('showSuccessMessage');  // Remove the flag from local storage
+    }
+}, []);  // Empty dependency array means this useEffect runs once when component mounts.
+
+
   const navigate = useNavigate();  // Initialize navigate
 
   const handleLogin = async (e) => {
@@ -34,14 +44,16 @@ const Login = () => {
       console.log(response.data.token);
 
       if (response.status === 200 && response.data.token) {  
+        setSuccessMessage(null); // Clear any success message upon login
         setSuccessMessage('Log in successful!');
         const user = {   
           id: response.data.payload.id,
           username: response.data.payload.username,
           token: response.data.token,
         };
-        setUser(user);             // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
-        navigate('/instruments');  // Redirect user to instruments after successful login
+        setUser(user);                                       // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
+        localStorage.setItem('token', response.data.token);  // Save the token to localStorage
+        navigate('/instruments');                            // Redirect user to instruments after successful login
       }
     } catch (error) {
       if (error.response && error.response.data.message) {

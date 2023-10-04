@@ -59,6 +59,12 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /users/logout: Log the user out
+router.post('/logout', passport.authenticate('jwt', { session: false }), (req, res) => {
+  console.log("Received Logout request:", req.body);
+  // Insert your custom logout logic here. This can be logging, user tracking, etc.
+   res.status(200).json({ message: 'Logout successful!' });
+});
 
 // GET /users/current: Return current user
 router.get('/current', passport.authenticate('jwt', { session: false }),
