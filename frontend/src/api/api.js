@@ -11,11 +11,33 @@ export const getAllInstruments = async () => {
   return response.data;
 };
 
-export const bookInstrument = async (id, userId) => {
+export const bookInstrument = async (id, userid, bookingData) => {  
   console.log("bookInstrument: Attempting to book instrument with ID:", id);
-  //const response = await axios.post(`${BASE_URL}/api/instruments/book`, { id, userId });
-  const response = await axios.post(`${BASE_URL}/api/instruments/book/${id}`, { userId });
-  return response.data;
+  console.log("bookInstrument: Attempting to book instrument with UserId:", userid);
+  console.log("bookInstrument: Attempting to book instrument with User:", bookingData.bookedBy);
+  console.log("bookInstrument: Attempting to book instrument with startDate:", bookingData.bookedFrom);
+  console.log("bookInstrument: Attempting to book instrument with endDate:", bookingData.bookedUntil);
+  
+  try {
+    console.log("Sending data to backend:", {
+      userid: userid,
+      bookedBy: bookingData.bookedBy,
+      bookedFrom: bookingData.bookedFrom,
+      bookedUntil: bookingData.bookedUntil
+    });
+      const response = await axios.post(`${BASE_URL}/api/instruments/book/${id}`, {
+        userid: userid,
+        bookedBy: bookingData.bookedBy,
+        bookedFrom: bookingData.bookedFrom,
+        bookedUntil: bookingData.bookedUntil
+      });
+ 
+      return response.data;
+  } catch (error) {
+      console.error("Error during booking:", error);
+      // handle error appropriately, maybe return a specific error object or throw an error
+      throw error;
+  }
 };
 
 export const getInstrumentStatus = async (id) => {

@@ -9,22 +9,21 @@ import UserContext from '../context/UserContext';
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const { setUser } = useContext(UserContext);
 
   useEffect(() => {
     // Check if the flag is set in local storage
-    if (localStorage.getItem('showSuccessMessage') === 'true') {
-        setSuccessMessage('Registration successful! You can now log in.');
-        localStorage.removeItem('showSuccessMessage');  // Remove the flag from local storage
+    if (localStorage.getItem("showSuccessMessage") === "true") {
+      setSuccessMessage("Registration successful! You can now log in.");
+      localStorage.removeItem("showSuccessMessage"); // Remove the flag from local storage
     }
-}, []);  // Empty dependency array means this useEffect runs once when component mounts.
+  }, []); // Empty dependency array means this useEffect runs once when component mounts.
 
-
-  const navigate = useNavigate();  // Initialize navigate
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,34 +31,34 @@ const Login = () => {
     try {
       // Real API call to validate user login
       //C:\lab-booking-system-master\lab-booking-system-master\backend\routes
-      const response = await axios.post(`${BASE_URL}/api/users/login`, {  
+      const response = await axios.post(`${BASE_URL}/api/users/login`, {
         username: username,
         password: password,
       });
 
-      console.log('Attempting to login with:', { username, password });
+      console.log("Attempting to login with:", { username, password });
       console.log(response.data.payload);
       console.log(response.data.payload.username);
       console.log(response.data.payload.id);
       console.log(response.data.token);
 
-      if (response.status === 200 && response.data.token) {  
+      if (response.status === 200 && response.data.token) {
         setSuccessMessage(null); // Clear any success message upon login
-        setSuccessMessage('Log in successful!');
-        const user = {   
+        setSuccessMessage("Log in successful!");
+        const user = {
           id: response.data.payload.id,
           username: response.data.payload.username,
           token: response.data.token,
         };
-        setUser(user);                                       // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
-        localStorage.setItem('token', response.data.token);  // Save the token to localStorage
-        navigate('/instruments');                            // Redirect user to instruments after successful login
+        setUser(user); // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
+        localStorage.setItem("token", response.data.token); // Save the token to localStorage
+        navigate("/instruments"); // Redirect user to instruments after successful login
       }
     } catch (error) {
       if (error.response && error.response.data.message) {
         setErrorMessage(error.response.data.message);
       } else {
-        setErrorMessage('An error occurred. Please try again.');
+        setErrorMessage("An error occurred. Please try again.");
       }
     }
   };
@@ -88,8 +87,12 @@ const Login = () => {
         </div>
         <button type="submit">Login</button>
       </form>
-      {errorMessage && <p style={{ color: 'red', fontWeight: 'bold' }}>{errorMessage}</p>}
-      {successMessage && <p style={{ color: 'green', fontWeight: 'bold' }}>{successMessage}</p>}
+      {errorMessage && (
+        <p style={{ color: "red", fontWeight: "bold" }}>{errorMessage}</p>
+      )}
+      {successMessage && (
+        <p style={{ color: "green", fontWeight: "bold" }}>{successMessage}</p>
+      )}
       <div>
         Don't have an account? <Link to="/register">Register here</Link>
       </div>
