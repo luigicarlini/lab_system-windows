@@ -18,7 +18,7 @@ export const bookInstrument = async (id, userid, bookingData) => {
   console.log("bookInstrument: Attempting to book instrument with startDate:", bookingData.bookedFrom);
   console.log("bookInstrument: Attempting to book instrument with endDate:", bookingData.bookedUntil);
   
-  try {
+ try {
     console.log("Sending data to backend:", {
       userid: userid,
       bookedBy: bookingData.bookedBy,
@@ -36,7 +36,26 @@ export const bookInstrument = async (id, userid, bookingData) => {
   } catch (error) {
       console.error("Error during booking:", error);
       // handle error appropriately, maybe return a specific error object or throw an error
-      throw error;
+      throw error; 
+  }
+};
+
+export const releaseInstrument = async (userid, id) => { 
+  try {
+    console.log("Sending data to backend:", {
+      userid: userid,
+      id: id
+     });
+      const response = await axios.post(`${BASE_URL}/api/instruments/release/${id}`, {
+        userid: userid,
+        id: id
+      });
+ 
+      return response.data;
+  } catch (error) {
+      console.error("Error during release:", error);
+      // handle error appropriately, maybe return a specific error object or throw an error
+      throw error; 
   }
 };
 

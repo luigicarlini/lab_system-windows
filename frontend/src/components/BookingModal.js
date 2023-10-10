@@ -9,7 +9,7 @@ const BookingModal = ({
   setIsModalOpen,
 }) => {
   const [bookingData, setBookingData] = useState({
-    bookedBy: "",
+    // bookedBy: "",
     bookedFrom: "",
     bookedUntil: "",
   });
@@ -59,7 +59,7 @@ const BookingModal = ({
         </>
       ) : (
         <>
-          <label>
+          {/* <label>
             Booked by:
             <input
               type="text"
@@ -67,7 +67,7 @@ const BookingModal = ({
               value={bookingData.bookedBy}
               onChange={handleInputChange}
             />
-          </label>
+          </label> */}
           <br />
           <label>
             Booked from:

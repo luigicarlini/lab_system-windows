@@ -92,23 +92,56 @@ router.post("/book/:id", async (req, res) => {
   }
 });
 
-router.post('/release', async (req, res) => {  // new endpoint
-  const { instrumentId } = req.body;
-  const instrument = await Instrument.findById(instrumentId);
-  if (!instrument) {
-    return res.status(404).json({ message: 'Instrument not found' });
-  }
-  if (instrument.availability) {
-    return res.status(400).json({ message: 'Instrument is not booked' });
-  }
-  instrument.availability = true;
-  instrument.bookedBy = null;
-  instrument.bookedFrom = null;
-  instrument.bookedUntil = null;
-  await instrument.save();
-  res.status(200).json({ message: 'Instrument released successfully' });
-});
+router.post('/release/:id', async (req, res) => {
+  console.log("Entered the release handler");
+  try {
+    const { id, userid } = req.body;
+    console.log("Complete req.body:", req.body);
+    console.log("Userid:", userid);
+    console.log("Instrument ID:", id);
 
+    console.log(`Looking for user with ID: ${userid}`);
+    const user = await User.findById(userid);
+    if (!user) {
+      console.error(`No user found for ID: ${userid}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("Found user:", user);
+
+
+    console.log(`Looking for instrument with ID: ${id}`);
+    const instrument = await Instrument.findById(id);
+    if (!instrument) {
+      console.error(`No instrument found for ID: ${id}`);
+      return res.status(404).json({ message: "Instrument not found" });
+    }
+    console.log("Found instrument:", instrument);
+
+    if (user && instrument) {
+      console.log("Release: Entered the user && instrument check");
+      console.log("Complete instrument:", instrument);
+      console.log("Availability instrument:", instrument.availability);
+      if (instrument.availability === false) {
+        console.log("Enter Availability instrument:");
+        instrument.availability = true;
+        console.log("Availability instrument:", instrument.availability);
+        instrument.bookedBy = null;
+        instrument.bookedFrom = null; // Adjusted the property names
+        instrument.bookedUntil = null; // Adjusted the property names
+        await instrument.save();
+        res
+          .status(200)
+          .json({ message: "Instrument released successfully", instrument });
+      } else {
+        res.status(400).json({ message: "Instrument is already released" });
+      }
+    } else {
+      res.status(404).json({ message: "User or Instrument not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 // ... other CRUD routes (e.g., POST for creating a new instrument, PUT for updating, DELETE for removing)
 
 module.exports = router;

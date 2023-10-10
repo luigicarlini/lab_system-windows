@@ -3,6 +3,7 @@ import {
   getAllInstruments,
   bookInstrument,
   getInstrumentStatus,
+  releaseInstrument,
 } from "../api/api";
 import { useUserContext } from "../context/UserContext";
 
@@ -48,7 +49,8 @@ const InstrumentList = () => {
     if (user && selectedInstrumentId) {
       try {
         //await bookInstrument(selectedInstrumentId, user._id, bookingData);
-        console.log("InstrumentList.js : complete User:", user);
+        console.log("User:", user);
+        console.log("selectedInstrumentId :", selectedInstrumentId);
         await bookInstrument(selectedInstrumentId, user.id, bookingData);
         // [Modification]: Not closing the modal nor resetting the selected instrument.    
         //setIsModalOpen(false);
@@ -65,6 +67,38 @@ const InstrumentList = () => {
     } else {
       console.log("You must be logged in to book an instrument.");
       // Handle feedback for not-logged-in state if needed.
+    }
+  };
+
+  const handleReleaseInstrument = async (id) => {
+    try {
+          console.log("InstrumentList.js : complete User:", user);
+          console.log("InstrumentList.js : InstrumentID:", id);
+          await releaseInstrument(user.id, id);
+
+          // Update Local State to Reflect Changes Immediately:
+          setInstrumentStatuses((prevStatuses) => ({
+            ...prevStatuses,
+            [id]: "Available",
+          }));
+          setInstruments((prevInstruments) =>
+            prevInstruments.map((instrument) =>
+              instrument._id === id
+                ? {
+                    ...instrument,
+                    bookedBy: null,
+                    bookedFrom: null,
+                    bookedUntil: null,
+                  }
+                : instrument
+            )
+          );
+
+          console.log("Instrument released successfully!");
+          // Optionally, you might want to show a success message to the user.
+        } catch (error) {
+      console.error("Failed to release instrument:", error);        
+      // Handle error feedback to user here if needed.
     }
   };
 
@@ -169,6 +203,22 @@ const InstrumentList = () => {
               Book
             </button>
           )}
+          {instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy && user && (instrument.bookedBy._id === user.id || instrument.bookedBy === user.id) && (
+              <button
+                onClick={() => handleReleaseInstrument(instrument._id)}
+                style={{
+                  marginTop: "10px",
+                  backgroundColor: "#808080", // Choose a color that denotes a release action
+                  color: "white",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Release
+              </button>
+            )}
         </div>
       ))}
 
@@ -176,7 +226,7 @@ const InstrumentList = () => {
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
         onSubmitBooking={handleBookingSubmit}
-        setIsModalOpen={setIsModalOpen}  // Pass setIsModalOpen as a prop
+        setIsModalOpen={setIsModalOpen} // Pass setIsModalOpen as a prop
         // onInputChange={handleInputChange}  // Pass handleInputChange as a prop
         // bookingData={bookingData}  // Pass bookingData as a prop to display the current state inside the inputs
       />
