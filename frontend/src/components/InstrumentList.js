@@ -38,6 +38,32 @@ const InstrumentList = () => {
     fetchData();
   }, [bookingMade]); // <-- Dependency array now includes bookingMade
 
+  const sortedInstruments = [...instruments].sort((a, b) => {
+    // Make sure user is defined and not null
+    if (!user) {
+      console.error('User is null or undefined:', user);
+      // Optionally, handle this case with some fallback or error logic
+      return 0; // Leaves the sort order unchanged
+    }
+  
+    const aIsBookedByUser = a.bookedBy && a.bookedBy._id === user.id;
+    const bIsBookedByUser = b.bookedBy && b.bookedBy._id === user.id;
+    
+    if (aIsBookedByUser && !bIsBookedByUser) {
+      return -1;
+    }
+    
+    if (!aIsBookedByUser && bIsBookedByUser) {
+      return 1;
+    }
+    
+    // Return 0 if neither condition above is met, which means
+    // that the two elements being compared should remain in the same order
+    return 0;
+  });
+
+  
+
   const handleBookInstrument = (id) => {
     console.log("Attempting to book instrument with ID:", id);
     setSelectedInstrumentId(id); // Set the selected instrument ID
@@ -115,15 +141,21 @@ const InstrumentList = () => {
   //     // setInstrumentStatuses(prevStatuses => ({ ...prevStatuses, [id]: status }));
   // };
   console.log("Instrument Statuses:", instrumentStatuses);
-
+  console.log("user :", user);
   return (
     <div>
-      {instruments.map((instrument) => (
+      {sortedInstruments.map((instrument) => (
         <div
           key={instrument._id}
           style={{
             marginBottom: "10px",
-            border: "1px solid #014C8C",
+            //border: (instrument.bookedBy && instrument.bookedBy.id === (user ? user.id : '')) ? "3px solid #014C8C" : "1px solid #014C8C",
+            border:
+            (instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy.username)
+              ? "1px solid #014C8C"
+              : instrumentStatuses[instrument._id] === "Available"
+              ? "3px solid #014C8C"
+              : "3px solid #014C8C",            
             padding: "15px",
             borderRadius: "5px",
           }}
@@ -203,7 +235,11 @@ const InstrumentList = () => {
               Book
             </button>
           )}
-          {instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy && user && (instrument.bookedBy._id === user.id || instrument.bookedBy === user.id) && (
+          {instrumentStatuses[instrument._id] === "Booked" &&
+            instrument.bookedBy &&
+            user &&
+            (instrument.bookedBy._id === user.id ||
+              instrument.bookedBy === user.id) && (
               <button
                 onClick={() => handleReleaseInstrument(instrument._id)}
                 style={{

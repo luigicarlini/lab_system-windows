@@ -54,20 +54,14 @@ const BookingModal = ({
       <h2>Book Instrument</h2>
       {bookingSuccess ? (
         <>
-          <p>Booking Successful!</p>
+          {/* <p>Booking Successful!</p> */}
+          <p style={{ fontWeight: "bold", color: "green" }}>
+            Booking Successful!
+          </p>
           <button onClick={handleNavigate}>Return to Instrument List</button>
         </>
       ) : (
         <>
-          {/* <label>
-            Booked by:
-            <input
-              type="text"
-              name="bookedBy"
-              value={bookingData.bookedBy}
-              onChange={handleInputChange}
-            />
-          </label> */}
           <br />
           <label>
             Booked from:
