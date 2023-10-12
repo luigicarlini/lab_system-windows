@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { useNavigate } from "react-router-dom"; // Using useNavigate
+import { useNavigate } from "react-router-dom";
+import "./InstrumentList.css";
 
 const BookingModal = ({
   isOpen,
@@ -9,24 +10,37 @@ const BookingModal = ({
   setIsModalOpen,
 }) => {
   const [bookingData, setBookingData] = useState({
-    // bookedBy: "",
     bookedFrom: "",
     bookedUntil: "",
   });
 
   const navigate = useNavigate();
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(""); // To store and display errors
+  const [showDateWarning, setShowDateWarning] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingData((prevData) => ({ ...prevData, [name]: value }));
+    // Once the user starts to input data, hide the warning.
+    setShowDateWarning(false);
   };
 
   const handleSubmit = async () => {
+    // Check if dates are set
+    if (!bookingData.bookedFrom || !bookingData.bookedUntil) {
+      setShowDateWarning(true);
+      return; // Exit the function early.
+    }
+  
     try {
-      //setIsModalOpen(false);  // Ensure the modal is closed when navigating back
-      await onSubmitBooking(bookingData);
-      setBookingSuccess(true);
+      setIsLoading(true);
+      setTimeout(async () => {
+        await onSubmitBooking(bookingData);
+        setBookingSuccess(true);
+        setIsLoading(false);
+      }, 1000);
     } catch (error) {
       console.error("Booking failed:", error);
       // Optionally handle user feedback for booking failure here
@@ -34,27 +48,25 @@ const BookingModal = ({
   };
 
   const handleNavigate = () => {
-    setIsModalOpen(false); // Ensure the modal is closed when navigating back
-    navigate("/instruments"); // Redirect user to instruments after successful login
-    setBookingSuccess(false); // Reset bookingSuccess state
+    setIsModalOpen(false);
+    navigate("/instruments");
+    setBookingSuccess(false);
   };
 
-  // Additional function to handle closing of modal and reset bookingSuccess state
   const handleModalClose = () => {
-    onRequestClose(); // Call parent's request to close function if it exists
-    setBookingSuccess(false); // Reset bookingSuccess state
+    onRequestClose();
+    setBookingSuccess(false);
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onRequestClose={handleModalClose} // Using the new function here
+      onRequestClose={handleModalClose}
       contentLabel="Book Instrument Modal"
     >
       <h2>Book Instrument</h2>
       {bookingSuccess ? (
         <>
-          {/* <p>Booking Successful!</p> */}
           <p style={{ fontWeight: "bold", color: "green" }}>
             Booking Successful!
           </p>
@@ -83,7 +95,21 @@ const BookingModal = ({
             />
           </label>
           <br />
-          <button onClick={handleSubmit}>Submit Booking</button>
+          {showDateWarning && (
+            <p style={{ color: "red", fontWeight: "bold" }}>
+              Both booking dates are mandatory.
+            </p>
+          )}
+          {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>}
+          <div>
+            {isLoading && (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <span className="loading-text">Booking...</span>
+              </div>
+            )}
+            <button onClick={handleSubmit}>Submit Booking</button>
+          </div>
           <button onClick={handleModalClose}>Close</button>
         </>
       )}
