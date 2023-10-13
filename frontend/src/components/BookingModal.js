@@ -17,7 +17,7 @@ const BookingModal = ({
   const navigate = useNavigate();
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(""); // To store and display errors
+  const [error] = useState(""); // To store and display errors
   const [showDateWarning, setShowDateWarning] = useState(false);
 
   const handleInputChange = (e) => {

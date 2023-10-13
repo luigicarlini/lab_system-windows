@@ -87,3 +87,27 @@
     border-radius: 4px;
     text-align: center;
   }
+
+input::placeholder {  /* Chrome, Firefox, Opera, Safari 10.1+ */
+    font-size: 16px; /* Adjust font size */
+    color: deepskyblue; /* Adjust color if you'd like */
+    opacity: 1; /* No transparency */
+}
+
+input::-ms-input-placeholder {  /* Internet Explorer 10-11 */
+    font-size: 16px;
+    color: deepskyblue;
+}
+
+input::placeholder {
+    font-size: 13px; /* Increase the font size */
+    color: black; /* Change text color to black */
+    opacity: 1; /* No transparency */
+}
+
+input {
+    border: 3px solid deepskyblue; /* Border thickness and color */
+    border-radius: 5px; /* Optional: Rounded corners */
+    padding: 15px 20px; /* Increase padding for a longer search bar */
+    font-size: 16px; /* Adjust input text size */
+}
