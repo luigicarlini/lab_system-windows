@@ -111,3 +111,9 @@ input {
     padding: 15px 20px; /* Increase padding for a longer search bar */
     font-size: 16px; /* Adjust input text size */
 }
+
+.calendar-input {
+    font-size: 20px; /* Adjust the font size as needed */
+    width: 250px;   /* Adjust the width as needed */
+  }
+

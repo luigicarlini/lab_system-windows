@@ -2,32 +2,68 @@ const mongoose = require('mongoose');
 
 const instrumentSchema = new mongoose.Schema({
   // Existing fields
-  instrumentName: {
+  catalogo: {
     type: String,
-    required: true
-  },
-  manufacturer: {
-    type: String,
-    required: true
+    required: false
   },
   model: {
     type: String,
-    required: true
+    required: false
   },
-  frequencyRange: {
+  description: {  //instrumentName
     type: String,
-    required: true
+    required: false
   },
-  description: {
+  note: {
     type: String,
-    required: true
+    required: false
   },
+  quantity: {
+    type: Number,
+    required: false
+  },
+  serial_num: {
+    type: String,
+    required: false
+  },
+  ericsson: {
+    type: String,
+    required: false
+  },
+  location: {
+    type: String,
+    required: false
+  },
+  owner: {
+    type: String,
+    required: false
+  },
+  progetto:{
+    type: String,
+    required: false
+  },
+  data2:{
+    type: String,
+    required: false
+  },
+  imm_num:{
+    type: String,
+    required: false
+  },
+  imm_num_old:{
+    type: String,
+    required: false
+  },
+  comments:{
+    type: String,
+    required: false
+  },
+  // New fields for booking
   availability: {
     type: Boolean,
     required: true,
     default: true
   },
-  // New fields for booking
   bookedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

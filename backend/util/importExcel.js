@@ -17,12 +17,20 @@ mongoose.connect('mongodb://127.0.0.1:27017/instrumentDB', {
 
 // Define Mongoose schema and model
 const InstrumentSchema = new mongoose.Schema({
-  instrumentName: { type: String, required: true },
-  manufacturer: { type: String, required: true },
-  model: { type: String, required: true },
-  frequencyRange: { type: String, required: true },
-  description: { type: String, required: true },
-  availability: { type: Boolean, required: true }
+  catalogo: { type: String, required: false },
+  model: { type: String, required: false },
+  description: { type: String, required: false },  
+  note: { type: String, required: false },
+  quantity: { type: Number, required: false },
+  serial_num: { type: String, required: false },
+  ericsson: { type: String, required: false },
+  location: { type: String, required: false },
+  owner: { type: String, required: false },
+  progetto: { type: String, required: false },
+  data2: { type: String, required: false },
+  imm_num: { type: String, required: false },
+  imm_num_old: { type: String, required: false },
+  comments: { type: String, required: false },
 });
 
 // const InstrumentModel = mongoose.model('Instrument', InstrumentSchema);
@@ -41,15 +49,23 @@ const saveData = async () => {
   const promises = data.map(async (item) => {
       try {
           const instrument = new Instrument({
-              instrumentName: item['Instrument Name'],
-              manufacturer: item['Manufacturer'],
+              catalogo: item['Catalogue'],
               model: item['Model'],
-              frequencyRange: item['Frequency Range'],
               description: item['Description'],
-              availability: item['Availability'].toLowerCase() === 'yes'
+              note: item['Option/Note'],
+              quantity: item['Quantity'],
+              serial_num: item['Serial_Num'],
+              ericsson: item['Ericsson'],
+              location: item['Location'],
+              owner: item['Owner'],
+              progetto: item['Project'],
+              data2: item['data2'],
+              imm_num: item['imm_number'],
+              imm_num_old: item['imm_number_old'],
+              comments: item['comments'],
           });
           await instrument.save();
-          console.log(`Instrument ${item['Instrument Name']} saved!`);
+          console.log(`Instrument ${item['Description']} saved!`);
       } catch (error) {
           console.error('Error saving instrument:', error.message);
       }
@@ -69,3 +85,4 @@ saveData();
 // 2) Execute the Script: Run the following command in the terminal: node util/importExcel.js
 // 3) Check the Console: After running the script, you should see a message like "Data imported" if everything goes well.
 // 4) If there's an error, it will print "Data import failed" along with the error details.
+
