@@ -453,7 +453,8 @@ const InstrumentList = () => {
                 marginBottom: "10px",
                 border:
                   instrumentStatuses[instrument._id] === "Booked" &&
-                  instrument.bookedBy.username
+                  //instrument.bookedBy.username
+                  instrument.bookedBy
                     ? "1px solid #014C8C"
                     : instrumentStatuses[instrument._id] === "Available"
                     ? "3px solid #014C8C"
