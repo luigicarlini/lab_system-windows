@@ -238,7 +238,7 @@ const InstrumentList = () => {
                 marginBottom: "10px",
                 border:
                   instrumentStatuses[instrument._id] === "Booked" &&
-                  instrument.bookedBy.username
+                  instrument.bookedBy
                     ? "1px solid #014C8C"
                     : instrumentStatuses[instrument._id] === "Available"
                     ? "3px solid #014C8C"
@@ -289,60 +289,60 @@ const InstrumentList = () => {
                 <div>
                   {/* All the additional details to be shown when expanded */}
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Catalogue: </span>
-                    {instrument.catalogo}
+                    <span style={{ fontWeight: "bold" }}>censimento: </span>
+                    {instrument.censimento}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Model: </span>
+                    <span style={{ fontWeight: "bold" }}>producer: </span>
+                    {instrument.producer}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: "bold" }}> model: </span>
                     {instrument.model}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}> Note: </span>
-                    {instrument.note}
+                    <span style={{ fontWeight: "bold" }}>equipment: </span>
+                    {instrument.equipment}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Quantity: </span>
-                    {instrument.quantity}
+                    <span style={{ fontWeight: "bold" }}>accessories: </span>
+                    {instrument.accessories}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Serial_Number: </span>
-                    {instrument.serial_num}
+                    <span style={{ fontWeight: "bold" }}>serial_number: </span>
+                    {instrument.serial_number}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Ericsson: </span>
-                    {instrument.ericsson}
+                    <span style={{ fontWeight: "bold" }}>last_calibration: </span>
+                    {instrument.last_calibration}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Location: </span>
-                    {instrument.location}
+                    <span style={{ fontWeight: "bold" }}>due_calibration: </span>
+                    {instrument.due_calibration}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Owner: </span>
-                    {instrument.owner}
+                    <span style={{ fontWeight: "bold" }}>ip_address: </span>
+                    {instrument.ip_address}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Project: </span>
-                    {instrument.progetto}
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: "bold" }}>Data2: </span>
-                    {instrument.data2}
+                    <span style={{ fontWeight: "bold" }}>reference_people: </span>
+                    {instrument.reference_people}
                   </div>
                   <div>
                     <span style={{ fontWeight: "bold" }}>
-                      Imm_Num(RegNumber):{" "}
+                    test_bench_number:{" "}
                     </span>
-                    {instrument.data2}
+                    {instrument.test_bench_number}
                   </div>
                   <div>
                     <span style={{ fontWeight: "bold" }}>
-                      Imm_Num_Old(RegNumber Old):{" "}
+                    notes:{" "}
                     </span>
-                    {instrument.data2}
+                    {instrument.notes}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Comments: </span>
-                    {instrument.comments}
+                    <span style={{ fontWeight: "bold" }}>HCL_serial_number: </span>
+                    {instrument.HCL_serial_number}
                   </div>
                   <div>
                     <span style={{ fontWeight: "bold" }}>Booked by: </span>
@@ -501,62 +501,64 @@ const InstrumentList = () => {
               </button>
               {expandedInstrumentId === instrument._id && (
                 <div>
+                  {/* Insert New attribute from here */}
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Catalogue: </span>
-                    {instrument.catalogo}
+                    <span style={{ fontWeight: "bold" }}>censimento: </span>
+                    {instrument.censimento}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Model: </span>
+                    <span style={{ fontWeight: "bold" }}>producer: </span>
+                    {instrument.producer}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: "bold" }}> model: </span>
                     {instrument.model}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}> Note: </span>
-                    {instrument.note}
+                    <span style={{ fontWeight: "bold" }}>equipment: </span>
+                    {instrument.equipment}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Quantity: </span>
-                    {instrument.quantity}
+                    <span style={{ fontWeight: "bold" }}>accessories: </span>
+                    {instrument.accessories}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Serial_Number: </span>
-                    {instrument.serial_num}
+                    <span style={{ fontWeight: "bold" }}>serial_number: </span>
+                    {instrument.serial_number}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Ericsson: </span>
-                    {instrument.ericsson}
+                    <span style={{ fontWeight: "bold" }}>last_calibration: </span>
+                    {instrument.last_calibration}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Location: </span>
-                    {instrument.location}
+                    <span style={{ fontWeight: "bold" }}>due_calibration: </span>
+                    {instrument.due_calibration}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Owner: </span>
-                    {instrument.owner}
+                    <span style={{ fontWeight: "bold" }}>ip_address: </span>
+                    {instrument.ip_address}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Project: </span>
-                    {instrument.progetto}
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: "bold" }}>Data2: </span>
-                    {instrument.data2}
+                    <span style={{ fontWeight: "bold" }}>reference_people: </span>
+                    {instrument.reference_people}
                   </div>
                   <div>
                     <span style={{ fontWeight: "bold" }}>
-                      Imm_Num(RegNumber):{" "}
+                    test_bench_number:{" "}
                     </span>
-                    {instrument.data2}
+                    {instrument.test_bench_number}
                   </div>
                   <div>
                     <span style={{ fontWeight: "bold" }}>
-                      Imm_Num_Old(RegNumber Old):{" "}
+                    notes:{" "}
                     </span>
-                    {instrument.data2}
+                    {instrument.notes}
                   </div>
                   <div>
-                    <span style={{ fontWeight: "bold" }}>Comments: </span>
-                    {instrument.comments}
+                    <span style={{ fontWeight: "bold" }}>HCL_serial_number: </span>
+                    {instrument.HCL_serial_number}
                   </div>
+                  {/* Insert new attribute until here */}
                   <div>
                     <span style={{ fontWeight: "bold" }}>Booked by: </span>
                     {instrument.bookedBy

@@ -8,7 +8,7 @@ const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const Register = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
+  //const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const navigate = useNavigate(); // <- Importing useNavigate instead of useHistory
@@ -20,7 +20,7 @@ const Register = () => {
       const response = await axios.post(`${BASE_URL}/api/users/register`, {
         username,
         password,
-        email,
+        //email,
       });
 
       if (response.status === 201) {
