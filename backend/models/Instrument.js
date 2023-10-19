@@ -2,7 +2,15 @@ const mongoose = require('mongoose');
 
 const instrumentSchema = new mongoose.Schema({
   // Existing fields
-  catalogo: {
+  censimento: {
+    type: String,
+    required: false
+  },
+  description: { //instrumentName
+    type: String,
+    required: false
+  },
+  producer: {  
     type: String,
     required: false
   },
@@ -10,51 +18,67 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  description: {  //instrumentName
+  equipment: {
     type: String,
     required: false
   },
-  note: {
+  accessories: {
     type: String,
     required: false
   },
   quantity: {
-    type: Number,
-    required: false
-  },
-  serial_num: {
     type: String,
     required: false
   },
-  ericsson: {
+  serial_number: {
     type: String,
     required: false
   },
-  location: {
+  last_calibration: {
     type: String,
     required: false
   },
-  owner: {
+  due_calibration:{
     type: String,
     required: false
   },
-  progetto:{
+  ip_address:{
     type: String,
     required: false
   },
-  data2:{
+  location:{
     type: String,
     required: false
   },
-  imm_num:{
+  location_description:{
     type: String,
     required: false
   },
-  imm_num_old:{
+  location_inside_room:{
     type: String,
     required: false
   },
-  comments:{
+  project:{
+    type: String,
+    required: false
+  },
+  reference_people:{
+    type: String,
+    required: false
+  },
+  test_bench_number:{
+    type: String,
+    required: false
+  },  
+  notes:{
+    type: String,
+    required: false
+  },
+  HCL_serial_number:{
+    type: String,
+    required: false
+  },
+  property:{
     type: String,
     required: false
   },
