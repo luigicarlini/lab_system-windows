@@ -10,6 +10,7 @@ import { useUserContext } from "../context/UserContext";
 import BookingModal from "./BookingModal";
 import "./InstrumentList.css";
 
+
 const InstrumentList = () => {
   const [instruments, setInstruments] = useState([]);
   const [instrumentStatuses, setInstrumentStatuses] = useState({});
@@ -20,12 +21,16 @@ const InstrumentList = () => {
   const [expandedInstrumentId, setExpandedInstrumentId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [promptLoginForInstrumentId, setPromptLoginForInstrumentId] = useState(null);
+  const [promptLoginForViewing, setPromptLoginForViewing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [bookedByMode, setBookedByMode] = useState(false);
   const [instrumentsBookedByMe, setInstrumentsBookedByMe] = useState([]);
   const [filteredInstruments, setFilteredInstruments] = useState([]); // <-- Add state to handle filtered instruments
   const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
   const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("all"); // possible values: "all", "byMe", "byAll"
+
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,11 +47,14 @@ const InstrumentList = () => {
           );
         }
 
-        if (bookedByMode && user) {
+         // Filtering based on viewMode
+        if (viewMode === "byMe" && user) {
           filtered = filtered.filter((instrument) =>
             instrument.bookedBy && instrument.bookedBy._id === user.id
           );
-        }
+        } else if (viewMode === "byAll") {
+          filtered = filtered.filter((instrument) => instrument.bookedBy);
+        } // for viewMode === "all", we don't filter further since we want all instruments
 
         // Apply equipment and model filters
         if (equipmentSearchTerm) {
@@ -204,7 +212,6 @@ const InstrumentList = () => {
             )
           );
         }
-        //"second section"
         console.log("Instrument released successfully!");
         setIsLoading(false);
       }, 1000);
@@ -214,7 +221,13 @@ const InstrumentList = () => {
   };
 
   const handleViewBookedByMe = () => {
+    if (!user) {
+      console.log("You must be logged in to view instruments booked by you.");
+      setPromptLoginForViewing(true);
+      return;
+    }
     setBookedByMode(true);
+    setViewMode("byMe");
     try {
       const instrumentsBooked = instruments.filter(
         (instrument) =>
@@ -238,8 +251,9 @@ const InstrumentList = () => {
   };
 
   const handleViewAllInstruments = () => {
+    setPromptLoginForViewing(false);
     setBookedByMode(false);
-
+    setViewMode("all");
     // Add console log to check which instruments are selected
     console.log(
       "Instruments selected in handleViewAllInstruments:",
@@ -247,27 +261,33 @@ const InstrumentList = () => {
     );
   };
   
-  // const handleViewBookedByAllUsers = () => {
-  //   setBookedByMode(true);
-  //   try {
-  //     const instrumentsBookedBy = instruments.filter(
-  //       (instrument) => instrument.bookedBy
-  //     );
-  //     //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
-  //     setFilteredInstruments(sortInstruments(instrumentsBookedBy));
+  const handleViewBookedByAllUsers = () => {
+    if (!user) {
+      console.log("You must be logged in to view instruments booked by all users.");
+      setPromptLoginForViewing(true);
+      return;
+    }
+    setBookedByMode(true);
+    setViewMode("byAll");
+    try {
+      const instrumentsBookedBy = instruments.filter(
+        (instrument) => instrument.bookedBy
+      );
+      //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+      setFilteredInstruments(sortInstruments(instrumentsBookedBy));
 
-  //     // Add console log to check all instruments booked by any user
-  //     console.log("All instruments booked by any user:", instrumentsBookedBy);
+      // Add console log to check all instruments booked by any user
+      console.log("All instruments booked by any user:", instrumentsBookedBy);
 
-  //     // Add console log to check which instruments are selected
-  //     console.log(
-  //       "Instruments selected in handleViewBookedByAllUsers:",
-  //       instrumentsBookedBy
-  //     );
-  //   } catch (error) {
-  //     console.error("Error fetching instruments booked by all users:", error);
-  //   }
-  // };
+      // Add console log to check which instruments are selected
+      console.log(
+        "Instruments selected in handleViewBookedByAllUsers:",
+        instrumentsBookedBy
+      );
+    } catch (error) {
+      console.error("Error fetching instruments booked by all users:", error);
+    }
+  };
 
   console.log("bookedByMode:", bookedByMode);
   console.log("user:", user);
@@ -301,16 +321,16 @@ const renderInstrumentDetails = (instrument) => {
         {instrument.description}
       </div>
       <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+        Equipment:{" "}
+        <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+          {instrument.equipment}
+        </span>
+      <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
         Model:{" "}
         <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
           {instrument.model}
         </span>
       </div>
-      <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-        Equipment:{" "}
-        <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-          {instrument.equipment}
-        </span>
       </div>
       <div>
         <span style={{ fontWeight: "bold" }}>Status:</span>
@@ -465,9 +485,162 @@ const renderInstrumentDetails = (instrument) => {
   );
 };
 
+const AllInstrumentsView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm }) => {
+  return (
+    <div>
+      {/* Buttons to filter the view */}
+      <button
+        onClick={() => {
+          console.log("JSX: Booked by Me button clicked");
+          handleViewBookedByMe();
+        }}
+        style={{
+          marginTop: "10px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          padding: "5px 10px",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "1.0em", 
+        }}
+      >
+        Booked by Me
+      </button>
+      <button
+        onClick={() => {
+          console.log("JSX: Booked By All Users button clicked");
+          handleViewBookedByAllUsers();
+        }}
+        style={{
+          marginTop: "10px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          padding: "5px 10px",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "1.0em",
+        }}
+      >
+        Booked By All Users
+      </button>
+
+      {/* List of all instruments */}
+      {filteredInstruments 
+        .filter((instrument) => {
+          // Apply your search filter based on 'searchTerm'
+          const searchTermLC = searchTerm.toLowerCase();
+          const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+
+          // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
+          const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+          const modelSearchTermLC = modelSearchTerm.toLowerCase();
+          const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+          const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+
+          // Combine all filter conditions using logical OR (||)
+          return (
+            matchesDescription ||
+            matchesEquipment ||
+            matchesModel
+          );
+        })
+        .map((instrument) => {
+          // Render each instrument detail
+          return renderInstrumentDetails(instrument);
+        })}
+    </div>
+  );
+};
+
+const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, handleViewAllInstruments }) => {
+  return (
+    <div>
+      <button
+        onClick={ handleViewAllInstruments }
+        style={{
+          marginTop: "10px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          padding: "5px 10px",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "1.0em", // Increased font size
+        }}
+      >
+        View All Instruments
+      </button>
+      {filteredInstruments
+        .filter((instrument) => {
+          const searchTermLC = searchTerm.toLowerCase();
+          const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+          const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+          const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+          const modelSearchTermLC = modelSearchTerm.toLowerCase();
+          const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+
+          return (
+            matchesDescription ||
+            matchesEquipment ||
+            matchesModel
+          );
+        })
+        .filter((instrument) => instrument.bookedBy && instrument.bookedBy._id === user.id)
+        .map((instrument) => renderInstrumentDetails(instrument))}
+    </div>
+  );
+};
+
+const BookedByAllUsersView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+  return (
+    <div>
+      <button
+        onClick={ handleViewAllInstruments }
+        style={{
+          marginTop: "10px",
+          backgroundColor: "#007BFF",
+          color: "white",
+          border: "none",
+          padding: "5px 10px",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "1.0em", // Increased font size
+        }}
+      >
+        View All Instruments
+      </button>
+      {filteredInstruments
+        .filter((instrument) => {
+          const searchTermLC = searchTerm.toLowerCase();
+          const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+          const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+          const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+          const modelSearchTermLC = modelSearchTerm.toLowerCase();
+          const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+
+          return (
+            matchesDescription ||
+            matchesEquipment ||
+            matchesModel
+          );
+        })
+        .filter((instrument) => instrument.bookedBy)
+        .map((instrument) => renderInstrumentDetails(instrument))}
+    </div>
+  );
+};
+
+
   return (
     <div>
       <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
+      {promptLoginForViewing && (
+      <div className="login-prompt">
+        You must be logged in to view booked instruments.
+      </div>
+    )}
       <div className="search-bar">
         <input
           type="text"
@@ -503,161 +676,39 @@ const renderInstrumentDetails = (instrument) => {
         }}
         />
       </div>
-      {bookedByMode ? (
-        <div>
-          <button
-            onClick={() => {
-              console.log("JSX: View All Instruments button clicked");
-              console.log("bookedByMode:", bookedByMode);
-              console.log("filteredInstruments:", filteredInstruments);
-              console.log("user:", user);
-              console.log("user_id:", user._id);
-              handleViewAllInstruments();
-            }}
-            style={{
-              marginTop: "10px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "1.3em", // Increased font size
-            }}
-          >
-            View All Instruments
-          </button>
-          {filteredInstruments
-              .filter((instrument) => {
-                // Apply your search filter based on 'searchTerm'
-                const searchTermLC = searchTerm.toLowerCase();
-                const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
-
-                // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
-                const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
-                const modelSearchTermLC = modelSearchTerm.toLowerCase();
-                const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
-                const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-
-                // Debugging statements
-                console.log("Instrument:", instrument);
-                console.log("Matches Description:", matchesDescription);
-                console.log("Matches Equipment:", matchesEquipment);
-                console.log("Matches Model:", matchesModel);
-                // console.log("bookedByMode:", bookedByMode);
-                // console.log("bookedByMode username:", instrument.bookedBy.username);
-                // console.log("bookedByMode id:", instrument.bookedBy._id);
-                // console.log("filteredInstruments:", filteredInstruments);
-                // console.log("user:", user);
-                // console.log("user_id:", user.id);
-
-                // Combine all filter conditions using logical OR (||)
-                return (
-                  matchesDescription ||
-                  matchesEquipment ||
-                  matchesModel
-                );
-              })
-              .map((instrument) => {
-                //const shouldDisplayInstrument = (instrumentStatuses[instrument._id] === "Booked") || (instrument.bookedBy._id !== user.id);
-                const shouldDisplayInstrument = instrumentStatuses[instrument._id] === "Booked" //&& instrument.bookedBy
-                if (shouldDisplayInstrument) {
-                  if (instrument.bookedBy._id === user.id)
-                  return (
-                    // Render instrument details using the function
-                    renderInstrumentDetails(instrument)
-                  );
-                  else 
-                    return (renderInstrumentDetails(instrument))
-                }
-              // Return null if the instrument should not be displayed
-              return null;
-            })}
-        </div>
-      ) : (
-        <>
-          <button
-            onClick={() => {
-              console.log("JSX: Booked by Me button clicked");
-              handleViewBookedByMe();
-            }}
-            style={{
-              marginTop: "10px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "1.0em", // Increased font size
-            }}
-          >
-            Booked by Me
-          </button>
-           {/* <button
-            onClick={() => {
-              console.log("JSX: Booked By All Users button clicked");
-              handleViewBookedByAllUsers();
-            }}
-            style={{
-              marginTop: "10px",
-              backgroundColor: "#007BFF",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "1.0em", // Increased font size
-            }}
-          >  
-            Booked By All Users
-          </button> */}
-          {filteredInstruments 
-            .filter((instrument) => {
-              // Apply your search filter based on 'searchTerm'
-              const searchTermLC = searchTerm.toLowerCase();
-              const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
-
-              // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
-              const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
-              const modelSearchTermLC = modelSearchTerm.toLowerCase();
-              const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
-              const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-
-                // Debugging statements
-                console.log("Instrument:", instrument);
-                console.log("Matches Description:", matchesDescription);
-                console.log("Matches Equipment:", matchesEquipment);
-                console.log("Matches Model:", matchesModel);
-
-
-              // Combine all filter conditions using logical OR (||)
-              return (
-                matchesDescription ||
-                matchesEquipment ||
-                matchesModel
-              );
-            })
-            .map((instrument) => {
-              const shouldDisplayInstrument = instrumentStatuses[instrument._id] === "Booked" || instrumentStatuses[instrument._id] === "Available";              
-              if (shouldDisplayInstrument) {
-                return (
-                  renderInstrumentDetails(instrument)
-                 );
-              }
-              // Return null if the instrument should not be displayed
-              return null;
-            })}
-        </>
-      )}
-      <BookingModal
-        isOpen={isModalOpen}
-        onRequestClose={() => setIsModalOpen(false)}
-        onSubmitBooking={handleBookingSubmit}
-        setIsModalOpen={setIsModalOpen}
+      {viewMode === "byMe" && (
+      <BookedByMeView 
+        searchTerm={searchTerm} 
+        equipmentSearchTerm={equipmentSearchTerm} 
+        modelSearchTerm={modelSearchTerm} 
+        handleViewAllInstruments={handleViewAllInstruments} 
       />
-    </div>
-  );
+    )}
+    {viewMode === "byAll" && (
+      <BookedByAllUsersView 
+        searchTerm={searchTerm} 
+        equipmentSearchTerm={equipmentSearchTerm} 
+        modelSearchTerm={modelSearchTerm} 
+        handleViewAllInstruments={handleViewAllInstruments} 
+        filteredInstruments={filteredInstruments}
+      />
+    )}
+    {viewMode === "all" && (
+      <AllInstrumentsView 
+        searchTerm={searchTerm} 
+        equipmentSearchTerm={equipmentSearchTerm} 
+        modelSearchTerm={modelSearchTerm} 
+      />
+    )}
+    <BookingModal
+      isOpen={isModalOpen}
+      onRequestClose={() => setIsModalOpen(false)}
+      onSubmitBooking={handleBookingSubmit}
+      setIsModalOpen={setIsModalOpen}
+    />
+  </div>
+);
+  
 };
 
 export default InstrumentList;
