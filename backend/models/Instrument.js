@@ -34,6 +34,14 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  materiale_ericsson: {
+    type: String,
+    required: false
+  },
+  location: {
+    type: String,
+    required: false
+  },
   last_calibration: {
     type: String,
     required: false
@@ -46,11 +54,11 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  location:{
+  room_site_number:{
     type: String,
     required: false
   },
-  location_description:{
+  room_site_description:{
     type: String,
     required: false
   },

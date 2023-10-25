@@ -30,11 +30,13 @@ const InstrumentSchema = new mongoose.Schema({
   accessories: { type: String, required: false },
   quantity: { type: String, required: false },
   serial_number: { type: String, required: false },
+  materiale_ericsson: { type: String, required: false },
+  location: { type: String, required: false },
   last_calibration: { type: String, required: false },
   due_calibration: { type: String, required: false },
   ip_address: { type: String, required: false },
-  location: { type: String, required: false },
-  location_description: { type: String, required: false },
+  room_site_number: { type: String, required: false },
+  room_site_description: { type: String, required: false },
   location_inside_room: { type: String, required: false },
   project: { type: Number, required: false },
   reference_people: { type: Number, required: false },
@@ -44,18 +46,6 @@ const InstrumentSchema = new mongoose.Schema({
   property: { type: Number, required: false },
   
 });
-
-//const Instrument = mongoose.model('Instrument', InstrumentSchema);
-
-// Function to convert Excel date serial number to "dd/mm/yyyy" string
-// const excelDateToString = (excelDate) => {
-//   const date = new Date(Date.UTC(1899, 11, 30)); // Excel's date epoch
-//   date.setDate(date.getDate() + excelDate);
-//   const day = date.getUTCDate().toString().padStart(2, '0');
-//   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-//   const year = date.getUTCFullYear();
-//   return `${day}/${month}/${year}`;
-// };
 
 const excelDateToString = (excelDate) => {
     const date = new Date(Date.UTC(1899, 11, 30)); // Excel's date epoch
@@ -107,17 +97,19 @@ const saveData = async () => {
           accessories: item["SW Options / Accessories"],
           quantity: item["Quantity"],
           serial_number: item["Producer Serial Number"],
+          materiale_ericsson: item["Materiale Ericsson"],
+          location: item["Location"],
           //last_calibration: item["Last calibration Date"],
           //due_calibration: item["Calibration Due Date"],
           last_calibration: lastCalibration,
           due_calibration: dueCalibration,
           ip_address: item["IP ADDRESS (if available)"],
-          location: item["Room Site Number"],
-          location_description: item["Room Site Description"],
+          room_site_number: item["Room Site Number"],
+          room_site_description: item["Room Site Description"],
           location_inside_room: item["Location inside the Room"],
           project: item["Project Description"],
           reference_people: item["Project Reference People"],
-          test_bench_number: item["Test Bench Number and/or Description"],
+          test_bench_number: item["Test Bench Number and /or Description"],
           notes: item["Notes and comments"],
           HCL_serial_number: item["HCL Serial numer / Internal coding"],
           property: item["PROPERTY  (who buyed the equipment)"],

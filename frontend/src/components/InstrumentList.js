@@ -247,27 +247,27 @@ const InstrumentList = () => {
     );
   };
   
-  const handleViewBookedByAllUsers = () => {
-    setBookedByMode(true);
-    try {
-      const instrumentsBookedBy = instruments.filter(
-        (instrument) => instrument.bookedBy
-      );
-      //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
-      setFilteredInstruments(sortInstruments(instrumentsBookedBy));
+  // const handleViewBookedByAllUsers = () => {
+  //   setBookedByMode(true);
+  //   try {
+  //     const instrumentsBookedBy = instruments.filter(
+  //       (instrument) => instrument.bookedBy
+  //     );
+  //     //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+  //     setFilteredInstruments(sortInstruments(instrumentsBookedBy));
 
-      // Add console log to check all instruments booked by any user
-      console.log("All instruments booked by any user:", instrumentsBookedBy);
+  //     // Add console log to check all instruments booked by any user
+  //     console.log("All instruments booked by any user:", instrumentsBookedBy);
 
-      // Add console log to check which instruments are selected
-      console.log(
-        "Instruments selected in handleViewBookedByAllUsers:",
-        instrumentsBookedBy
-      );
-    } catch (error) {
-      console.error("Error fetching instruments booked by all users:", error);
-    }
-  };
+  //     // Add console log to check which instruments are selected
+  //     console.log(
+  //       "Instruments selected in handleViewBookedByAllUsers:",
+  //       instrumentsBookedBy
+  //     );
+  //   } catch (error) {
+  //     console.error("Error fetching instruments booked by all users:", error);
+  //   }
+  // };
 
   console.log("bookedByMode:", bookedByMode);
   console.log("user:", user);
@@ -355,8 +355,32 @@ const renderInstrumentDetails = (instrument) => {
             {instrument.due_calibration}
           </div>
           <div>
+            <span style={{ fontWeight: "bold" }}>materiale ericsson: </span>
+            {instrument.due_calibration}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>location: </span>
+            {instrument.location}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>room_site_number: </span>
+            {instrument.room_site_number}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>room_site_description: </span>
+            {instrument.room_site_description}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>location_inside_room: </span>
+            {instrument.location_inside_room}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>project: </span>
+            {instrument.project}
+          </div>
+          <div>
             <span style={{ fontWeight: "bold" }}>ip_address: </span>
-            {instrument.ip_address}
+            {instrument.materiale_ericsson}
           </div>
           <div>
             <span style={{ fontWeight: "bold" }}>reference_people: </span>
@@ -520,12 +544,12 @@ const renderInstrumentDetails = (instrument) => {
                 console.log("Matches Description:", matchesDescription);
                 console.log("Matches Equipment:", matchesEquipment);
                 console.log("Matches Model:", matchesModel);
-                console.log("bookedByMode:", bookedByMode);
-                console.log("bookedByMode username:", instrument.bookedBy.username);
-                console.log("bookedByMode id:", instrument.bookedBy._id);
-                console.log("filteredInstruments:", filteredInstruments);
-                console.log("user:", user);
-                console.log("user_id:", user.id);
+                // console.log("bookedByMode:", bookedByMode);
+                // console.log("bookedByMode username:", instrument.bookedBy.username);
+                // console.log("bookedByMode id:", instrument.bookedBy._id);
+                // console.log("filteredInstruments:", filteredInstruments);
+                // console.log("user:", user);
+                // console.log("user_id:", user.id);
 
                 // Combine all filter conditions using logical OR (||)
                 return (
