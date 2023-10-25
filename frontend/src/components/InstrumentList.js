@@ -19,41 +19,20 @@ const InstrumentList = () => {
   const [bookingMade, setBookingMade] = useState(false);
   const [expandedInstrumentId, setExpandedInstrumentId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [promptLoginForInstrumentId, setPromptLoginForInstrumentId] = useState(
-    null
-  );
+  const [promptLoginForInstrumentId, setPromptLoginForInstrumentId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [bookedByMode, setBookedByMode] = useState(false);
   const [instrumentsBookedByMe, setInstrumentsBookedByMe] = useState([]);
   const [filteredInstruments, setFilteredInstruments] = useState([]); // <-- Add state to handle filtered instruments
-
-  //   useEffect(() => {
-  //   if (!searchTerm) {
-  //     setFilteredInstruments(sortInstruments(instruments));
-  //   } else {
-  //     setFilteredInstruments(
-  //       sortInstruments(
-  //         instruments.filter((instrument) =>
-  //           instrument.description.toLowerCase().includes(searchTerm.toLowerCase())
-  //         )
-  //       )
-  //     );
-  //   }
-  // }, [searchTerm, instruments, user]);  // Added 'user' as a dependency
-
-  //Define a helper function to filter instruments by description
-  // const filterInstrumentsByDescription = (instruments, searchTerm) => {
-  //   return instruments.filter((instrument) =>
-  //     instrument.description.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
-  // };
+  const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
+  const [modelSearchTerm, setModelSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const allInstruments = await getAllInstruments();
 
-        // Combine filtering based on search term and bookedByMode
+        // Combine filtering based on search term, bookedByMode, equipmentSearchTerm, and modelSearchTerm
         let filtered = allInstruments;
 
         if (searchTerm) {
@@ -64,9 +43,23 @@ const InstrumentList = () => {
         }
 
         if (bookedByMode && user) {
-          filtered = filtered.filter(
-            (instrument) =>
-              instrument.bookedBy && instrument.bookedBy._id === user.id
+          filtered = filtered.filter((instrument) =>
+            instrument.bookedBy && instrument.bookedBy._id === user.id
+          );
+        }
+
+        // Apply equipment and model filters
+        if (equipmentSearchTerm) {
+          const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+          filtered = filtered.filter((instrument) =>
+            instrument.equipment.toLowerCase().includes(equipmentSearchTermLC)
+          );
+        }
+
+        if (modelSearchTerm) {
+          const modelSearchTermLC = modelSearchTerm.toLowerCase();
+          filtered = filtered.filter((instrument) =>
+            instrument.model.toLowerCase().includes(modelSearchTermLC)
           );
         }
 
@@ -75,6 +68,8 @@ const InstrumentList = () => {
 
         // Log relevant values for debugging
         console.log("searchTerm:", searchTerm);
+        console.log("equipmentSearchTerm:", equipmentSearchTerm);
+        console.log("modelSearchTerm:", modelSearchTerm);
         console.log("bookedByMode:", bookedByMode);
         console.log("user:", user);
         console.log("filteredInstruments:", filteredInstruments);
@@ -84,7 +79,8 @@ const InstrumentList = () => {
     };
 
     fetchData();
-  }, [searchTerm, bookedByMode, user]);
+  }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedByMode, user]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -184,11 +180,11 @@ const InstrumentList = () => {
           prevInstruments.map((instrument) =>
             instrument._id === id
               ? {
-                  ...instrument,
-                  bookedBy: updatedInstrument.bookedBy || null,
-                  bookedFrom: updatedInstrument.bookedFrom || null,
-                  bookedUntil: updatedInstrument.bookedUntil || null,
-                }
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+              }
               : instrument
           )
         );
@@ -199,11 +195,11 @@ const InstrumentList = () => {
             prevInstruments.map((instrument) =>
               instrument._id === id
                 ? {
-                    ...instrument,
-                    bookedBy: updatedInstrument.bookedBy || null,
-                    bookedFrom: updatedInstrument.bookedFrom || null,
-                    bookedUntil: updatedInstrument.bookedUntil || null,
-                  }
+                  ...instrument,
+                  bookedBy: updatedInstrument.bookedBy || null,
+                  bookedFrom: updatedInstrument.bookedFrom || null,
+                  bookedUntil: updatedInstrument.bookedUntil || null,
+                }
                 : instrument
             )
           );
@@ -224,7 +220,9 @@ const InstrumentList = () => {
         (instrument) =>
           instrument.bookedBy && instrument.bookedBy._id === user.id
       );
-      setInstrumentsBookedByMe(sortInstruments(instrumentsBooked));
+      //setInstrumentsBookedByMe(sortInstruments(instrumentsBooked));
+      setFilteredInstruments(sortInstruments(instrumentsBooked));
+
 
       // Add console log to check instruments booked by the current user
       console.log("Instruments booked by current user:", instrumentsBooked);
@@ -248,14 +246,15 @@ const InstrumentList = () => {
       instruments
     );
   };
-
+  
   const handleViewBookedByAllUsers = () => {
     setBookedByMode(true);
     try {
       const instrumentsBookedBy = instruments.filter(
         (instrument) => instrument.bookedBy
       );
-      setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+      //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+      setFilteredInstruments(sortInstruments(instrumentsBookedBy));
 
       // Add console log to check all instruments booked by any user
       console.log("All instruments booked by any user:", instrumentsBookedBy);
@@ -270,21 +269,227 @@ const InstrumentList = () => {
     }
   };
 
+  console.log("bookedByMode:", bookedByMode);
+  console.log("user:", user);
+  console.log("filteredInstruments:", filteredInstruments);
+
+  // Define a function to render instrument details
+const renderInstrumentDetails = (instrument) => {
+  return (
+    <div
+      key={instrument._id}
+      style={{
+        marginBottom: "10px",
+        border:
+          instrumentStatuses[instrument._id] === "Booked" &&
+          instrument.bookedBy
+            ? "1px solid #014C8C"
+            : instrumentStatuses[instrument._id] === "Available"
+            ? "3px solid #014C8C"
+            : "3px solid #014C8C",
+        padding: "15px",
+        borderRadius: "5px",
+      }}
+    >
+      <div
+        style={{
+          fontWeight: "bold",
+          fontSize: "1.1em",
+          color: "#014C8C",
+        }}
+      >
+        {instrument.description}
+      </div>
+      <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+        Model:{" "}
+        <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+          {instrument.model}
+        </span>
+      </div>
+      <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+        Equipment:{" "}
+        <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+          {instrument.equipment}
+        </span>
+      </div>
+      <div>
+        <span style={{ fontWeight: "bold" }}>Status:</span>
+        <span
+          style={{
+            color:
+              instrumentStatuses[instrument._id] === "Booked"
+                ? "red"
+                : instrumentStatuses[instrument._id] === "Available"
+                ? "green"
+                : "black",
+            fontWeight:
+              instrumentStatuses[instrument._id] === "Booked" ||
+              instrumentStatuses[instrument._id] === "Available"
+                ? "bold"
+                : "normal",
+          }}
+        >
+          {instrumentStatuses[instrument._id]
+            ? ` ${instrumentStatuses[instrument._id]}`
+            : " Unknown"}
+        </span>
+      </div>
+      {/* Updated: Expand/Collapse Button */}
+      <button onClick={() => toggleInstrumentDetails(instrument._id)}>
+        {expandedInstrumentId === instrument._id ? "Collapse" : "Expand"}
+      </button>
+      {/* All the additional details to be shown when expanded */}
+      {expandedInstrumentId === instrument._id && (
+        <div>
+          {/* All the additional details to be shown when expanded */}
+          <div>
+            <span style={{ fontWeight: "bold" }}>producer: </span>
+            {instrument.producer}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>accessories: </span>
+            {instrument.accessories}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>due_calibration: </span>
+            {instrument.due_calibration}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>ip_address: </span>
+            {instrument.ip_address}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>reference_people: </span>
+            {instrument.reference_people}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>test_bench_number: </span>
+            {instrument.test_bench_number}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>notes: </span>
+            {instrument.notes}
+          </div>
+          <div>
+            <span style={{ fontWeight: "bold" }}>Booked by: </span>
+            {instrument.bookedBy
+              ? typeof instrument.bookedBy === "object"
+                ? instrument.bookedBy.username
+                : instrument.bookedBy
+              : "N/A"}
+          </div>
+          {/* <div>
+            <span style={{ fontWeight: "bold" }}>Booked from: </span>
+            {instrument.bookedFrom || "N/A"}
+          </div> */}
+          <div>
+            <span style={{ fontWeight: "bold" }}>Booked until: </span>
+            {instrument.bookedUntil || "N/A"}
+          </div>
+        </div>
+      )}
+      {instrumentStatuses[instrument._id] === "Available" && (
+        <button
+          onClick={() => handleBookInstrument(instrument._id)}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#28a745",
+            color: "white",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Book
+        </button>
+      )}
+      {instrument._id === promptLoginForInstrumentId && (
+        <div className="login-prompt">
+          You must be logged in to book this instrument.
+        </div>
+      )}
+      {instrumentStatuses[instrument._id] === "Booked" &&
+        instrument.bookedBy &&
+        user &&
+        (instrument.bookedBy._id === user.id ||
+          instrument.bookedBy === user.id) && (
+          <div>
+            {isLoading && (
+              <div className="loading-container">
+                <div className="spinner"></div>
+                <span className="loading-text">Releasing...</span>
+              </div>
+            )}
+            <button
+              onClick={() => handleReleaseInstrument(instrument._id)}
+              style={{
+                marginTop: "10px",
+                backgroundColor: "#808080", // Choose a color that denotes a release action
+                color: "white",
+                border: "none",
+                padding: "5px 10px",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Release
+            </button>
+          </div>
+        )}
+    </div>
+  );
+};
+
   return (
     <div>
-      <h1 style={{ fontWeight: "bold" }}>Instrument List</h1>
+      <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
       <div className="search-bar">
         <input
           type="text"
           placeholder="Search by instrument name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            fontWeight: "bold",
+            border: "2px solid blue",
+            fontSize: "1em" // Adjust as needed
+        }}
+        />
+        <input
+          type="text"
+          placeholder="Search by equipment..."
+          value={equipmentSearchTerm}
+          onChange={(e) => setEquipmentSearchTerm(e.target.value)}
+          style={{
+            fontWeight: "bold",
+            border: "2px solid blue",
+            fontSize: "1em" // Adjust as needed
+        }}
+        />
+        <input
+          type="text"
+          placeholder="Search by model..."
+          value={modelSearchTerm}
+          onChange={(e) => setModelSearchTerm(e.target.value)}
+          style={{
+            fontWeight: "bold",
+            border: "2px solid blue",
+            fontSize: "1em" // Adjust as needed
+        }}
         />
       </div>
       {bookedByMode ? (
         <div>
           <button
-            onClick={handleViewAllInstruments}
+            onClick={() => {
+              console.log("JSX: View All Instruments button clicked");
+              console.log("bookedByMode:", bookedByMode);
+              console.log("filteredInstruments:", filteredInstruments);
+              console.log("user:", user);
+              console.log("user_id:", user._id);
+              handleViewAllInstruments();
+            }}
             style={{
               marginTop: "10px",
               backgroundColor: "#28a745",
@@ -298,227 +503,49 @@ const InstrumentList = () => {
           >
             View All Instruments
           </button>
-          {instrumentsBookedByMe
-            .filter((instrument) =>
-              instrument.description
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())
-            )
-            .map((instrument) => {
-              const shouldDisplayInstrument =
-                instrumentStatuses[instrument._id] === "Booked";
+          {filteredInstruments
+              .filter((instrument) => {
+                // Apply your search filter based on 'searchTerm'
+                const searchTermLC = searchTerm.toLowerCase();
+                const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
 
-              if (shouldDisplayInstrument) {
+                // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
+                const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+                const modelSearchTermLC = modelSearchTerm.toLowerCase();
+                const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+                const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+
+                // Debugging statements
+                console.log("Instrument:", instrument);
+                console.log("Matches Description:", matchesDescription);
+                console.log("Matches Equipment:", matchesEquipment);
+                console.log("Matches Model:", matchesModel);
+                console.log("bookedByMode:", bookedByMode);
+                console.log("bookedByMode username:", instrument.bookedBy.username);
+                console.log("bookedByMode id:", instrument.bookedBy._id);
+                console.log("filteredInstruments:", filteredInstruments);
+                console.log("user:", user);
+                console.log("user_id:", user.id);
+
+                // Combine all filter conditions using logical OR (||)
                 return (
-                  <div
-                    key={instrument._id}
-                    style={{
-                      marginBottom: "10px",
-                      border:
-                        instrumentStatuses[instrument._id] === "Booked" &&
-                        instrument.bookedBy
-                          ? "1px solid #014C8C"
-                          : instrumentStatuses[instrument._id] === "Available"
-                          ? "3px solid #014C8C"
-                          : "3px solid #014C8C",
-                      padding: "15px",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "1.1em",
-                        color: "#014C8C",
-                      }}
-                    >
-                      {instrument.description}
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: "bold" }}>Status:</span>
-                      <span
-                        style={{
-                          color:
-                            instrumentStatuses[instrument._id] === "Booked"
-                              ? "red"
-                              : instrumentStatuses[instrument._id] ===
-                                "Available"
-                              ? "green"
-                              : "black",
-                          fontWeight:
-                            instrumentStatuses[instrument._id] === "Booked" ||
-                            instrumentStatuses[instrument._id] === "Available"
-                              ? "bold"
-                              : "normal",
-                        }}
-                      >
-                        {instrumentStatuses[instrument._id]
-                          ? ` ${instrumentStatuses[instrument._id]}`
-                          : " Unknown"}
-                      </span>
-                    </div>
-                    {/* Updated: Expand/Collapse Button */}
-                    <button
-                      onClick={() => toggleInstrumentDetails(instrument._id)}
-                    >
-                      {expandedInstrumentId === instrument._id
-                        ? "Collapse"
-                        : "Expand"}
-                    </button>
-                    {/* All the additional details to be shown when expanded */}
-                    {expandedInstrumentId === instrument._id && (
-                      <div>
-                        {/* All the additional details to be shown when expanded */}
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            censimento:{" "}
-                          </span>
-                          {instrument.censimento}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>producer: </span>
-                          {instrument.producer}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}> model: </span>
-                          {instrument.model}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            equipment:{" "}
-                          </span>
-                          {instrument.equipment}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            accessories:{" "}
-                          </span>
-                          {instrument.accessories}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            serial_number:{" "}
-                          </span>
-                          {instrument.serial_number}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            last_calibration:{" "}
-                          </span>
-                          {instrument.last_calibration}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            due_calibration:{" "}
-                          </span>
-                          {instrument.due_calibration}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            ip_address:{" "}
-                          </span>
-                          {instrument.ip_address}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            reference_people:{" "}
-                          </span>
-                          {instrument.reference_people}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            test_bench_number:{" "}
-                          </span>
-                          {instrument.test_bench_number}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>notes: </span>
-                          {instrument.notes}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            HCL_serial_number:{" "}
-                          </span>
-                          {instrument.HCL_serial_number}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked by:{" "}
-                          </span>
-                          {instrument.bookedBy
-                            ? typeof instrument.bookedBy === "object"
-                              ? instrument.bookedBy.username
-                              : instrument.bookedBy
-                            : "N/A"}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked from:{" "}
-                          </span>
-                          {instrument.bookedFrom || "N/A"}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked until:{" "}
-                          </span>
-                          {instrument.bookedUntil || "N/A"}
-                        </div>
-                      </div>
-                    )}
-                    {instrumentStatuses[instrument._id] === "Available" && (
-                      <button
-                        onClick={() => handleBookInstrument(instrument._id)}
-                        style={{
-                          marginTop: "10px",
-                          backgroundColor: "#28a745",
-                          color: "white",
-                          border: "none",
-                          padding: "5px 10px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Book
-                      </button>
-                    )}
-                    {instrument._id === promptLoginForInstrumentId && (
-                      <div className="login-prompt">
-                        You must be logged in to book this instrument.
-                      </div>
-                    )}
-                    {instrumentStatuses[instrument._id] === "Booked" &&
-                      instrument.bookedBy &&
-                      user &&
-                      (instrument.bookedBy._id === user.id ||
-                        instrument.bookedBy === user.id) && (
-                        <div>
-                          {isLoading && (
-                            <div className="loading-container">
-                              <div className="spinner"></div>
-                              <span className="loading-text">Releasing...</span>
-                            </div>
-                          )}
-                          <button
-                            onClick={() =>
-                              handleReleaseInstrument(instrument._id)
-                            }
-                            style={{
-                              marginTop: "10px",
-                              backgroundColor: "#808080", // Choose a color that denotes a release action
-                              color: "white",
-                              border: "none",
-                              padding: "5px 10px",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Release
-                          </button>
-                        </div>
-                      )}
-                  </div>
+                  matchesDescription ||
+                  matchesEquipment ||
+                  matchesModel
                 );
-              }
+              })
+              .map((instrument) => {
+                //const shouldDisplayInstrument = (instrumentStatuses[instrument._id] === "Booked") || (instrument.bookedBy._id !== user.id);
+                const shouldDisplayInstrument = instrumentStatuses[instrument._id] === "Booked" //&& instrument.bookedBy
+                if (shouldDisplayInstrument) {
+                  if (instrument.bookedBy._id === user.id)
+                  return (
+                    // Render instrument details using the function
+                    renderInstrumentDetails(instrument)
+                  );
+                  else 
+                    return (renderInstrumentDetails(instrument))
+                }
               // Return null if the instrument should not be displayed
               return null;
             })}
@@ -543,7 +570,7 @@ const InstrumentList = () => {
           >
             Booked by Me
           </button>
-          <button
+           {/* <button
             onClick={() => {
               console.log("JSX: Booked By All Users button clicked");
               handleViewBookedByAllUsers();
@@ -558,231 +585,42 @@ const InstrumentList = () => {
               cursor: "pointer",
               fontSize: "1.0em", // Increased font size
             }}
-          >
+          >  
             Booked By All Users
-          </button>
-          {filteredInstruments
-            .filter((instrument) =>
-              instrument.description
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())
-            )
+          </button> */}
+          {filteredInstruments 
+            .filter((instrument) => {
+              // Apply your search filter based on 'searchTerm'
+              const searchTermLC = searchTerm.toLowerCase();
+              const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+
+              // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
+              const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+              const modelSearchTermLC = modelSearchTerm.toLowerCase();
+              const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+              const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+
+                // Debugging statements
+                console.log("Instrument:", instrument);
+                console.log("Matches Description:", matchesDescription);
+                console.log("Matches Equipment:", matchesEquipment);
+                console.log("Matches Model:", matchesModel);
+
+
+              // Combine all filter conditions using logical OR (||)
+              return (
+                matchesDescription ||
+                matchesEquipment ||
+                matchesModel
+              );
+            })
             .map((instrument) => {
-              const shouldDisplayInstrument =
-                instrumentStatuses[instrument._id] === "Booked" ||
-                instrumentStatuses[instrument._id] === "Available";
+              const shouldDisplayInstrument = instrumentStatuses[instrument._id] === "Booked" || instrumentStatuses[instrument._id] === "Available";              
               if (shouldDisplayInstrument) {
                 return (
-                  <div
-                    key={instrument._id}
-                    style={{
-                      marginBottom: "10px",
-                      border:
-                        instrumentStatuses[instrument._id] === "Booked" &&
-                        instrument.bookedBy
-                          ? "1px solid #014C8C"
-                          : instrumentStatuses[instrument._id] === "Available"
-                          ? "3px solid #014C8C"
-                          : "3px solid #014C8C",
-                      padding: "15px",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        fontSize: "1.1em",
-                        color: "#014C8C",
-                      }}
-                    >
-                      {instrument.description}
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: "bold" }}>Status:</span>
-                      <span
-                        style={{
-                          color:
-                            instrumentStatuses[instrument._id] === "Booked"
-                              ? "red"
-                              : instrumentStatuses[instrument._id] ===
-                                "Available"
-                              ? "green"
-                              : "black",
-                          fontWeight:
-                            instrumentStatuses[instrument._id] === "Booked" ||
-                            instrumentStatuses[instrument._id] === "Available"
-                              ? "bold"
-                              : "normal",
-                        }}
-                      >
-                        {instrumentStatuses[instrument._id]
-                          ? ` ${instrumentStatuses[instrument._id]}`
-                          : " Unknown"}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => toggleInstrumentDetails(instrument._id)}
-                    >
-                      {expandedInstrumentId === instrument._id
-                        ? "Collapse"
-                        : "Expand"}
-                    </button>
-                    {expandedInstrumentId === instrument._id && (
-                      <div>
-                        {/* Insert New attribute from here */}
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            censimento:{" "}
-                          </span>
-                          {instrument.censimento}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>producer: </span>
-                          {instrument.producer}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}> model: </span>
-                          {instrument.model}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            equipment:{" "}
-                          </span>
-                          {instrument.equipment}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            accessories:{" "}
-                          </span>
-                          {instrument.accessories}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            serial_number:{" "}
-                          </span>
-                          {instrument.serial_number}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            last_calibration:{" "}
-                          </span>
-                          {instrument.last_calibration}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            due_calibration:{" "}
-                          </span>
-                          {instrument.due_calibration}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            ip_address:{" "}
-                          </span>
-                          {instrument.ip_address}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            reference_people:{" "}
-                          </span>
-                          {instrument.reference_people}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            test_bench_number:{" "}
-                          </span>
-                          {instrument.test_bench_number}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>notes: </span>
-                          {instrument.notes}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            HCL_serial_number:{" "}
-                          </span>
-                          {instrument.HCL_serial_number}
-                        </div>
-                        {/* Insert new attribute until here */}
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked by:{" "}
-                          </span>
-                          {instrument.bookedBy
-                            ? typeof instrument.bookedBy === "object"
-                              ? instrument.bookedBy.username
-                              : instrument.bookedBy
-                            : "N/A"}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked from:{" "}
-                          </span>
-                          {instrument.bookedFrom || "N/A"}
-                        </div>
-                        <div>
-                          <span style={{ fontWeight: "bold" }}>
-                            Booked until:{" "}
-                          </span>
-                          {instrument.bookedUntil || "N/A"}
-                        </div>
-                      </div>
-                    )}
-                    {/* Add rendering for other instrument details here */}
-                    {instrumentStatuses[instrument._id] === "Available" && (
-                      <button
-                        onClick={() => handleBookInstrument(instrument._id)}
-                        style={{
-                          marginTop: "10px",
-                          backgroundColor: "#28a745",
-                          color: "white",
-                          border: "none",
-                          padding: "5px 10px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Book
-                      </button>
-                    )}
-                    {instrument._id === promptLoginForInstrumentId && (
-                      <div className="login-prompt">
-                        You must be logged in to book this instrument.
-                      </div>
-                    )}
-                    {instrumentStatuses[instrument._id] === "Booked" &&
-                      instrument.bookedBy &&
-                      user &&
-                      (instrument.bookedBy._id === user.id ||
-                        instrument.bookedBy === user.id) && (
-                        <div>
-                          {isLoading && (
-                            <div className="loading-container">
-                              <div className="spinner"></div>
-                              <span className="loading-text">Releasing...</span>
-                            </div>
-                          )}
-                          <button
-                            onClick={() =>
-                              handleReleaseInstrument(instrument._id)
-                            }
-                            style={{
-                              marginTop: "10px",
-                              backgroundColor: "#808080",
-                              color: "white",
-                              border: "none",
-                              padding: "5px 10px",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Release
-                          </button>
-                        </div>
-                      )}
-                  </div>
-                );
+                  renderInstrumentDetails(instrument)
+                 );
               }
-
               // Return null if the instrument should not be displayed
               return null;
             })}
