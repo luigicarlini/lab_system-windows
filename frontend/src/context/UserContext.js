@@ -2,13 +2,20 @@
 // You can use React's Context API to share user information across different components in your app. In this example, 
 // we  created a UserContext to hold the logged-in user's data. This context will be provided at a higher-level component, 
 // so any child component can consume it.
-import React, { createContext, useState, useContext } from 'react';
+//import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react'; // Add useEffect import
 
 const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+        setUser(JSON.parse(storedUser));
+    }
+  }, []);
+  
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}

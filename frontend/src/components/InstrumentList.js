@@ -186,59 +186,6 @@ const InstrumentList = () => {
     }
   };
 
-  // const handleReleaseInstrument = async (id) => {
-  //   try {
-  //     setIsLoading(true);
-  //     setTimeout(async () => {
-  //       // Release the instrument
-  //       await releaseInstrument(user.id, id);
-
-  //       // Fetch the updated instrument data
-  //       const updatedInstrument = await getInstrumentStatus(id);
-
-  //       // Update instrumentStatuses
-  //       setInstrumentStatuses((prevStatuses) => ({
-  //         ...prevStatuses,
-  //         [id]: updatedInstrument.availability ? "Available" : "Booked",
-  //       }));
-
-  //       // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
-  //       setInstruments((prevInstruments) =>
-  //         prevInstruments.map((instrument) =>
-  //           instrument._id === id
-  //             ? {
-  //               ...instrument,
-  //               bookedBy: updatedInstrument.bookedBy || null,
-  //               bookedFrom: updatedInstrument.bookedFrom || null,
-  //               bookedUntil: updatedInstrument.bookedUntil || null,
-  //             }
-  //             : instrument
-  //         )
-  //       );
-
-  //       // Update the filtered view (instrumentsBookedByMe) if applicable
-  //       if (bookedByMode) {
-  //         setInstrumentsBookedByMe((prevInstruments) =>
-  //           prevInstruments.map((instrument) =>
-  //             instrument._id === id
-  //               ? {
-  //                 ...instrument,
-  //                 bookedBy: updatedInstrument.bookedBy || null,
-  //                 bookedFrom: updatedInstrument.bookedFrom || null,
-  //                 bookedUntil: updatedInstrument.bookedUntil || null,
-  //               }
-  //               : instrument
-  //           )
-  //         );
-  //       }
-  //       console.log("Instrument released successfully!");
-  //       setIsLoading(false);
-  //     }, 1000);
-  //   } catch (error) {
-  //     console.error("Failed to release instrument:", error);
-  //   }
-  // };
-
   const handleReleaseInstrument = async (id) => {
     try {
       setIsLoading(true);

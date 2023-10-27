@@ -16,6 +16,10 @@ const Login = () => {
   const { setUser } = useContext(UserContext);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
     // Check if the flag is set in local storage
     if (localStorage.getItem("showSuccessMessage") === "true") {
       setSuccessMessage("Registration successful! You can now log in.");
@@ -52,6 +56,7 @@ const Login = () => {
         };
         setUser(user); // Typically, you would also set the token in a secure way, such as an HttpOnly cookie or secure local storage.
         localStorage.setItem("token", response.data.token); // Save the token to localStorage
+        localStorage.setItem("currentUser", JSON.stringify(user)); // <-- Save the user to localStorage
         navigate("/instruments"); // Redirect user to instruments after successful login
       }
     } catch (error) {
