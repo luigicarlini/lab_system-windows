@@ -12,6 +12,7 @@ import "./InstrumentList.css";
 
 
 const InstrumentList = () => {
+  const SUPER_USER_USERNAME = "super user"
   const [instruments, setInstruments] = useState([]);
   const [instrumentStatuses, setInstrumentStatuses] = useState({});
   const { user } = useUserContext();
@@ -29,6 +30,8 @@ const InstrumentList = () => {
   const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
   const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("all"); // possible values: "all", "byMe", "byAll"
+  const isSuperUser = user && user.username === SUPER_USER_USERNAME;
+
 
   
 
@@ -159,6 +162,22 @@ const InstrumentList = () => {
       try {
         await bookInstrument(selectedInstrumentId, user.id, bookingData);
         setBookingMade(!bookingMade);
+        // Fetch the updated instrument data after booking
+        const updatedInstrument = await getInstrumentStatus(selectedInstrumentId);
+
+        // Update the filteredInstruments list
+        setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === selectedInstrumentId
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+              }
+              : instrument
+          )
+        );
       } catch (error) {
         console.log("Error during booking:", error);
       }
@@ -167,9 +186,83 @@ const InstrumentList = () => {
     }
   };
 
+  // const handleReleaseInstrument = async (id) => {
+  //   try {
+  //     setIsLoading(true);
+  //     setTimeout(async () => {
+  //       // Release the instrument
+  //       await releaseInstrument(user.id, id);
+
+  //       // Fetch the updated instrument data
+  //       const updatedInstrument = await getInstrumentStatus(id);
+
+  //       // Update instrumentStatuses
+  //       setInstrumentStatuses((prevStatuses) => ({
+  //         ...prevStatuses,
+  //         [id]: updatedInstrument.availability ? "Available" : "Booked",
+  //       }));
+
+  //       // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
+  //       setInstruments((prevInstruments) =>
+  //         prevInstruments.map((instrument) =>
+  //           instrument._id === id
+  //             ? {
+  //               ...instrument,
+  //               bookedBy: updatedInstrument.bookedBy || null,
+  //               bookedFrom: updatedInstrument.bookedFrom || null,
+  //               bookedUntil: updatedInstrument.bookedUntil || null,
+  //             }
+  //             : instrument
+  //         )
+  //       );
+
+  //       // Update the filtered view (instrumentsBookedByMe) if applicable
+  //       if (bookedByMode) {
+  //         setInstrumentsBookedByMe((prevInstruments) =>
+  //           prevInstruments.map((instrument) =>
+  //             instrument._id === id
+  //               ? {
+  //                 ...instrument,
+  //                 bookedBy: updatedInstrument.bookedBy || null,
+  //                 bookedFrom: updatedInstrument.bookedFrom || null,
+  //                 bookedUntil: updatedInstrument.bookedUntil || null,
+  //               }
+  //               : instrument
+  //           )
+  //         );
+  //       }
+  //       console.log("Instrument released successfully!");
+  //       setIsLoading(false);
+  //     }, 1000);
+  //   } catch (error) {
+  //     console.error("Failed to release instrument:", error);
+  //   }
+  // };
+
   const handleReleaseInstrument = async (id) => {
     try {
       setIsLoading(true);
+
+      // Determine if the current user is a super user
+      const isSuperUser = user && user.username === "super user"; // replace "superUser" with the actual super user's username
+
+      // Find the instrument being released
+      const instrumentToRelease = instruments.find(instr => instr._id === id);
+
+      // If the instrument is not found, return early
+      if (!instrumentToRelease) {
+        console.error("Instrument not found:", id);
+        return;
+      }
+
+      // Check if the current user is the one who booked the instrument or if they are a super user
+      const canRelease = (user && instrumentToRelease.bookedBy && (instrumentToRelease.bookedBy._id === user.id || instrumentToRelease.bookedBy === user.id)) || isSuperUser;
+
+      if (!canRelease) {
+        console.log("You do not have permission to release this instrument.");
+        return;
+      }
+
       setTimeout(async () => {
         // Release the instrument
         await releaseInstrument(user.id, id);
@@ -197,6 +290,19 @@ const InstrumentList = () => {
           )
         );
 
+        setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+              }
+              : instrument
+          )
+        );
+
         // Update the filtered view (instrumentsBookedByMe) if applicable
         if (bookedByMode) {
           setInstrumentsBookedByMe((prevInstruments) =>
@@ -212,6 +318,7 @@ const InstrumentList = () => {
             )
           );
         }
+
         console.log("Instrument released successfully!");
         setIsLoading(false);
       }, 1000);
@@ -219,6 +326,7 @@ const InstrumentList = () => {
       console.error("Failed to release instrument:", error);
     }
   };
+
 
   const handleViewBookedByMe = () => {
     if (!user) {
@@ -454,10 +562,8 @@ const renderInstrumentDetails = (instrument) => {
         </div>
       )}
       {instrumentStatuses[instrument._id] === "Booked" &&
-        instrument.bookedBy &&
-        user &&
-        (instrument.bookedBy._id === user.id ||
-          instrument.bookedBy === user.id) && (
+        ((instrument.bookedBy && user && instrument.bookedBy._id === user.id) ||
+          isSuperUser) && (
           <div>
             {isLoading && (
               <div className="loading-container">
