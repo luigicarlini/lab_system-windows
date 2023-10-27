@@ -30,7 +30,6 @@ export const LogoutProvider = ({ children }) => {
       if (response.status === 200) {
         setSuccessMessage('Logout successful!');
         setUser(null); // <-- 'setUser' function or 'user' state is not defined here
-        localStorage.removeItem('token');  // <-- Clear the token from localStorage
         setTimeout(() => {
           navigate('/');  // Redirecting using navigate
         }, 1000);

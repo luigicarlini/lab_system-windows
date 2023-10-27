@@ -129,7 +129,7 @@ const BookingModal = ({
           <br />
           {showDateWarning && (
             <p style={{ color: "red", fontWeight: "bold" }}>
-              Please insert valid dates ("Booking from" from Today, "Booking from" before "Booking Until").
+              Please insert valid dates ("Booking from" from Tomorrow, "Booking from" before "Booking Until").
             </p>
           )}
           {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>}
