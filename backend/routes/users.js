@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
   console.log("Password comparison result:", isMatch);
   if (isMatch) {
     const payload = { id: user.id, username: user.username };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 86400 });
     res.status(200).json({
       payload,
       token

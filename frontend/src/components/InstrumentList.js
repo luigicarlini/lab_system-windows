@@ -475,6 +475,10 @@ const renderInstrumentDetails = (instrument) => {
             {instrument.producer}
           </div>
           <div>
+            <span style={{ fontWeight: "bold" }}>producer_serial_number: </span>
+            {instrument.serial_number}
+          </div>
+          <div>
             <span style={{ fontWeight: "bold" }}>accessories: </span>
             {instrument.accessories}
           </div>
