@@ -32,7 +32,10 @@ router.get('/:id', async (req, res) => {
 router.post("/book/:id", async (req, res) => {
   console.log("Entered the booking route handler");
   try {
-    const { userid, bookedBy, bookedFrom, bookedUntil } = req.body;
+    //const { userid, bookedBy, bookedFrom, bookedUntil } = req.body;
+    // Extracting booking details including the new location from the request body
+    const { userid, bookedBy, bookedFrom, bookedUntil, location } = req.body;
+    
     console.log("Complete req.body:", req.body);
     const instrumentId = req.params.id;
 
@@ -44,6 +47,8 @@ router.post("/book/:id", async (req, res) => {
     console.log("Booked from:", req.body.bookedFrom);
     console.log("Booked until:", req.body.bookedUntil);
     console.log("Instrument ID:", instrumentId);
+    console.log("location:", req.body.location);
+
 
     console.log(`Looking for user with ID: ${req.body.userid}`);
     const user = await User.findById(req.body.userid);
@@ -71,6 +76,9 @@ router.post("/book/:id", async (req, res) => {
         console.log("Enter Availability instrument:");
         instrument.availability = false;
         console.log("Availability instrument:", instrument.availability);
+        // Store the current instrument location as originalLocation
+        instrument.originalLocation = instrument.location;  // Update location with the new location provided in the request
+        instrument.location = req.body.location;  // Assuming 'location' is the name of the attribute sent from the frontend
         instrument.bookedBy = req.body.userid;
         instrument.bookedFrom = req.body.bookedFrom; // Adjusted the property names
         instrument.bookedUntil = req.body.bookedUntil; // Adjusted the property names
@@ -125,6 +133,12 @@ router.post('/release/:id', async (req, res) => {
         console.log("Enter Availability instrument:");
         instrument.availability = true;
         console.log("Availability instrument:", instrument.availability);
+        // Revert the location back to originalLocation
+        if (instrument.originalLocation) {
+            instrument.location = instrument.originalLocation;
+        }
+        // Clear the originalLocation attribute        
+        instrument.originalLocation = null;
         instrument.bookedBy = null;
         instrument.bookedFrom = null; // Adjusted the property names
         instrument.bookedUntil = null; // Adjusted the property names
@@ -142,6 +156,53 @@ router.post('/release/:id', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Route to toggle an instrument's "returning" status
+router.post('/returning/:id', async (req, res) => {
+  try {
+    const instrument = await Instrument.findById(req.params.id);
+    if (!instrument) {
+        return res.status(404).json({ message: "Instrument not found" });
+    }
+    // Toggle the 'returning' status based on the request body
+    // If 'returning' is not provided in the request, default to true
+    console.log("backend instrument.returning:", req.body.returning);
+    instrument.returning = req.body.returning; // This should be set according to what was passed in the request body
+    console.log("backend instrument.returning:", instrument.returning);
+    //instrument.returning = req.body.returning !== undefined ? req.body.returning : true;
+    //instrument.waiting = false;
+    //instrument.waiting = instrument.returning === true ? false : true;
+    console.log("backend instrument.waiting:", instrument.waiting);
+    await instrument.save();
+    res.status(200).json({ message: `Instrument marked as ${instrument.returning ? 'returning' : 'not returning'}`, instrument });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route for a user to toggle the "waiting" status for an instrument
+router.post('/waiting/:id', async (req, res) => {
+  try {
+    const instrument = await Instrument.findById(req.params.id);
+    if (!instrument) {
+        return res.status(404).json({ message: "Instrument not found" });
+    }
+    // Toggle the 'waiting' status based on the request body
+    // If 'waiting' is not provided in the request, default to true
+    console.log("backend instrument.waiting:", req.body.waiting);
+    instrument.waiting = req.body.waiting;
+    //instrument.waiting = req.body.waiting !== undefined ? req.body.waiting : true;
+    console.log("backend instrument.waiting:", instrument.waiting);
+    instrument.returning = false;
+    //instrument.returning = instrument.waiting === true ? false : true;
+    console.log("backend instrument.returning:", instrument.returning);
+    await instrument.save();
+    res.status(200).json({ message: `User marked as ${instrument.waiting ? 'waiting for' : 'not waiting for'} instrument`, instrument });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // ... other CRUD routes (e.g., POST for creating a new instrument, PUT for updating, DELETE for removing)
 
 module.exports = router;

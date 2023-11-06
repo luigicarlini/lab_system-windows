@@ -17,19 +17,22 @@ export const bookInstrument = async (id, userid, bookingData) => {
   console.log("bookInstrument: Attempting to book instrument with User:", bookingData.bookedBy);
   console.log("bookInstrument: Attempting to book instrument with startDate:", bookingData.bookedFrom);
   console.log("bookInstrument: Attempting to book instrument with endDate:", bookingData.bookedUntil);
+  console.log("bookInstrument: Attempting to move instrument to location:", bookingData.location);  // <-- New log
   
  try {
     console.log("Sending data to backend:", {
       userid: userid,
       bookedBy: bookingData.bookedBy,
       bookedFrom: bookingData.bookedFrom,
-      bookedUntil: bookingData.bookedUntil
+      bookedUntil: bookingData.bookedUntil,
+      location: bookingData.location  // <-- Added the new location attribute
     });
       const response = await axios.post(`${BASE_URL}/api/instruments/book/${id}`, {
         userid: userid,
         bookedBy: bookingData.bookedBy,
         bookedFrom: bookingData.bookedFrom,
-        bookedUntil: bookingData.bookedUntil
+        bookedUntil: bookingData.bookedUntil,
+        location: bookingData.location  // <-- Added the new location attribute
       });
  
       return response.data;
@@ -65,11 +68,61 @@ export const getInstrumentStatus = async (id) => {
   return response.data;
 };
 
+// export const markInstrumentAsReturning = async (id) => {
+//   console.log("markInstrumentAsReturning: Attempting to mark instrument with ID:", id, " as returning");
+//   try {
+//     console.log("markInstrumentAsReturning :Sending data to backend:", {
+//       id: id
+//      });
+//       const response = await axios.post(`${BASE_URL}/api/instruments/returning/${id}`);
+//       return response.data;
+//   } catch (error) {
+//       console.error("Error during marking instrument as returning:", error);
+//       throw error;
+//   }
+// };
+
+export const markInstrumentAsReturning = async (id, isReturning = true) => {
+  console.log(`markInstrumentAsReturning: Attempting to set returning status for instrument with ID: ${id} to ${isReturning}`);
+  try {
+      const response = await axios.post(`${BASE_URL}/api/instruments/returning/${id}`, { returning: isReturning });
+      return response.data;
+  } catch (error) {
+      console.error("Error during marking instrument as returning:", error);
+      throw error;
+  }
+};
+
+// export const markInstrumentAsWaiting = async (id) => {
+//   console.log("markInstrumentAsReturning: Attempting to mark instrument with ID:", id, " as waiting");
+//   try {
+//       const response = await axios.post(`${BASE_URL}/api/instruments/waiting/${id}`);
+//         return response.data;
+//       } catch (error) {
+//       console.error("Error during marking user as waiting:", error);
+//       throw error;
+//   }
+// };
+
+export const markInstrumentAsWaiting = async (id, isWaiting = true) => {
+  console.log(`markInstrumentAsWaiting: Attempting to set waiting status for instrument with ID: ${id} to ${isWaiting}`);
+  try {
+      const response = await axios.post(`${BASE_URL}/api/instruments/waiting/${id}`, { waiting: isWaiting });
+      return response.data;
+  } catch (error) {
+      console.error("Error during marking user as waiting:", error);
+      throw error;
+  }
+};
+
 // Default export containing all functions
 const api = {
   getAllInstruments,
   bookInstrument,
-  getInstrumentStatus
+  releaseInstrument,
+  getInstrumentStatus,
+  markInstrumentAsReturning,  // <-- Added
+  markInstrumentAsWaiting     // <-- Added
 };
 
 export default api;

@@ -10,7 +10,7 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  producer: {  
+  producer: {
     type: String,
     required: false
   },
@@ -46,51 +46,63 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  due_calibration:{
+  due_calibration: {
     type: String,
     required: false
   },
-  ip_address:{
+  ip_address: {
     type: String,
     required: false
   },
-  room_site_number:{
+  room_site_number: {
     type: String,
     required: false
   },
-  room_site_description:{
+  room_site_description: {
     type: String,
     required: false
   },
-  location_inside_room:{
+  location_inside_room: {
     type: String,
     required: false
   },
-  project:{
+  project: {
     type: String,
     required: false
   },
-  reference_people:{
+  reference_people: {
     type: String,
     required: false
   },
-  test_bench_number:{
-    type: String,
-    required: false
-  },  
-  notes:{
+  test_bench_number: {
     type: String,
     required: false
   },
-  HCL_serial_number:{
+  notes: {
     type: String,
     required: false
   },
-  property:{
+  HCL_serial_number: {
+    type: String,
+    required: false
+  },
+  property: {
     type: String,
     required: false
   },
   // New fields for booking
+  originalLocation: {
+    type: String,
+    trim: true,
+  },
+  returning: {
+    type: Boolean,
+    default: false
+  },
+  waiting: {
+    type: Boolean,
+    default: false
+  },
   availability: {
     type: Boolean,
     required: true,
