@@ -67,8 +67,9 @@ router.post('/logout', passport.authenticate('jwt', { session: false }), (req, r
 });
 
 // GET /users/current: Return current user
-router.get('/current', passport.authenticate('jwt', { session: false }),
-  (req, res) => {
+router.get('/current', passport.authenticate('jwt', { session: false }),(req, res) => {
+  console.log("Received Current User request, Body:", req.body);
+  console.log("Received Current User request, User:", req.user);
     res.json(req.user);
   }
 );

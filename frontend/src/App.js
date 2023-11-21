@@ -15,25 +15,45 @@ import { UserProvider, useUserContext } from './context/UserContext';
 const App = () => {
   const { user, setUser } = useUserContext(); // Use custom hook, now `user` is defined
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-        const response = await axios.get(`${BASE_URL}/users/current`);
+      const token = localStorage.getItem('token');
+      console.log("App.js: token:", token);
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          const BASE_URL = process.env.REACT_APP_BACKEND_URL;
+          console.log("App.js: sending request to:", `${BASE_URL}/api/users/current`);
+          const response = await axios.get(`${BASE_URL}/api/users/current`);
+          console.log("App.js: response from server:", response);
+          
+          if (response.data) {
+            console.log("App.js: user data:", response.data);
 
-        if (response.data && response.data.user) {
-          setUser(response.data.user);  // Here we update the context
+            setUser(response.data); // Set the user in the context
+          } else {
+            console.log("App.js: no user data in response");
+          }
+        } catch (error) {
+          console.error("App.js: error fetching user:", error);
+          if (error.response) {
+            console.error("App.js: error response status:", error.response.status);
+            console.error("App.js: error response data:", error.response.data);
+          }
+          // If token is invalid, clear it from local storage
+          if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+          }
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
+      } else {
         setIsLoading(false);
       }
     };
-
+  
     fetchUser();
-  }, [setUser]);  // Added setUser as a dependency since we are using it inside the useEffect
+  }, [setUser]); // Make sure to include setUser as a dependency
 
   if (isLoading) {
     return <div>Loading...</div>;

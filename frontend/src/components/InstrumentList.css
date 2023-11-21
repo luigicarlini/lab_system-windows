@@ -91,6 +91,7 @@
     border: 1px solid #f5c6cb;
     border-radius: 4px;
     text-align: center;
+    position: relative;
 }
 
 input::placeholder {
@@ -179,4 +180,39 @@ input {
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
+    width: 100%;
+}
+
+.rejecting-button {
+    margin-top: 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+}
+
+.pending-release {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #ffcc00; /* Yellow background for attention */
+    color: #333; /* Dark text for contrast */
+    border-radius: 5px;
+    border: 1px solid #ffa500; /* Orange border */
+    text-align: center;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.search-bar {
+    /* Add your desired styling here */
+    /* Example: adding a background color and some padding */
+    background-color: white;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    /* Ensure it scrolls with the page */
+    position: relative;
 }

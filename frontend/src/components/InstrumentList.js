@@ -1,12 +1,14 @@
-//"first section,"
 import React, { useEffect, useState } from "react";
 import {
   getAllInstruments,
   bookInstrument,
   releaseInstrument,
   getInstrumentStatus,
-  markInstrumentAsReturning,  // <-- Added
-  markInstrumentAsWaiting     // <-- Added
+  markInstrumentAsReturning,     // <-- Added
+  markInstrumentAsWaiting,       // <-- Added
+  markInstrumentAsCancelBooking, // <-- Added
+  markInstrumentAsRejected,      // <-- Added
+  markInstrumentAsReleased     // <-- Added
 } from "../api/api";
 import { useUserContext } from "../context/UserContext";
 import BookingModal from "./BookingModal";
@@ -31,10 +33,13 @@ const InstrumentList = () => {
   const [filteredInstruments, setFilteredInstruments] = useState([]); // <-- Add state to handle filtered instruments
   const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
   const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [bookedbySearchTerm, setBookedBySearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("all"); // possible values: "all", "byMe", "byAll"
   const isSuperUser = user && user.username === SUPER_USER_USERNAME;
   const [waitingToTake, setWaitingToTake] = useState([]);
   const [returningInstruments, setReturningInstruments] = useState([]);
+  const [pendingReleaseInstruments, setPendingReleaseInstruments] = useState([]);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +80,17 @@ const InstrumentList = () => {
           );
         }
 
+        if (bookedbySearchTerm) {
+          const bookedbySearchTermLC = bookedbySearchTerm.toLowerCase();
+          filtered = filtered.filter((instrument) => 
+              instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
+                  instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                  instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+              false
+          );
+      }
+
         // Update the filtered instruments
         setFilteredInstruments(sortInstruments(filtered));
 
@@ -82,6 +98,7 @@ const InstrumentList = () => {
         console.log("searchTerm:", searchTerm);
         console.log("equipmentSearchTerm:", equipmentSearchTerm);
         console.log("modelSearchTerm:", modelSearchTerm);
+        console.log("bookedbySearchTerm:", bookedbySearchTerm);
         console.log("bookedByMode:", bookedByMode);
         console.log("user:", user);
         console.log("filteredInstruments:", filteredInstruments);
@@ -91,7 +108,7 @@ const InstrumentList = () => {
     };
 
     fetchData();
-  }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedByMode, user]);
+  }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, bookedByMode, user]);
 
 
   useEffect(() => {
@@ -195,7 +212,6 @@ const InstrumentList = () => {
               : instrument
           )
         );
-      //second section
       // After successfully booking the instrument, add it to the waitingToTake list
       setWaitingToTake((prevWaiting) => [...prevWaiting, selectedInstrumentId]);
 
@@ -207,39 +223,303 @@ const InstrumentList = () => {
     }
   };
 
+  // const handleReleaseInstrument = async (id) => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     // Determine if the current user is a super user
+  //     const isSuperUser = user && user.username === "super user"; // replace "superUser" with the actual super user's username
+
+  //     // Find the instrument being released
+  //     const instrumentToRelease = instruments.find(instr => instr._id === id);
+
+  //     // If the instrument is not found, return early
+  //     if (!instrumentToRelease) {
+  //       console.error("Instrument not found:", id);
+  //       return;
+  //     }
+
+  //     // Check if the current user is the one who booked the instrument or if they are a super user
+  //     const canRelease = (user && instrumentToRelease.bookedBy && (instrumentToRelease.bookedBy._id === user.id || instrumentToRelease.bookedBy === user.id)) || isSuperUser;
+
+  //     if (!canRelease) {
+  //       console.log("You do not have permission to release this instrument.");
+  //       return;
+  //     }
+  //     setTimeout(async () => {
+  //       // Release the instrument
+        
+  //       await releaseInstrument(user.id, id);
+  //       // After releasing the instrument, update its returning status
+  //       await markInstrumentAsReturning(id, true); // This will set returning to true
+
+  //       // Fetch the updated instrument data
+  //       const updatedInstrument = await getInstrumentStatus(id);
+
+
+  //       // Update instrumentStatuses
+  //       setInstrumentStatuses((prevStatuses) => ({
+  //         ...prevStatuses,
+  //         [id]: updatedInstrument.availability ? "Available" : "Booked",
+  //       }));
+
+  //       // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
+  //       setInstruments((prevInstruments) =>
+  //         prevInstruments.map((instrument) =>
+  //           instrument._id === id
+  //             ? {
+  //               ...instrument,
+  //               bookedBy: updatedInstrument.bookedBy || null,
+  //               bookedFrom: updatedInstrument.bookedFrom || null,
+  //               bookedUntil: updatedInstrument.bookedUntil || null,
+  //               location: updatedInstrument.location || null,
+  //               returning: updatedInstrument.returning || null,
+  //               waiting: updatedInstrument.waiting || null,
+  //               rejecting: updatedInstrument.rejecting || null,
+  //             }
+  //             : instrument
+  //         )
+  //       );
+
+  //       setFilteredInstruments((prevFilteredInstruments) =>
+  //         prevFilteredInstruments.map((instrument) =>
+  //           instrument._id === id
+  //             ? {
+  //               ...instrument,
+  //               bookedBy: updatedInstrument.bookedBy || null,
+  //               bookedFrom: updatedInstrument.bookedFrom || null,
+  //               bookedUntil: updatedInstrument.bookedUntil || null,
+  //               location: updatedInstrument.location || null,
+  //               returning: updatedInstrument.returning || null,
+  //               waiting: updatedInstrument.waiting || null,  
+  //               rejecting: updatedInstrument.rejecting || null,
+  //             }
+  //             : instrument
+  //         )
+  //       );
+
+  //       // Update the filtered view (instrumentsBookedByMe) if applicable
+  //       if (bookedByMode) {
+  //         setInstrumentsBookedByMe((prevInstruments) =>
+  //           prevInstruments.map((instrument) =>
+  //             instrument._id === id
+  //               ? {
+  //                 ...instrument,
+  //                 bookedBy: updatedInstrument.bookedBy || null,
+  //                 bookedFrom: updatedInstrument.bookedFrom || null,
+  //                 bookedUntil: updatedInstrument.bookedUntil || null,
+  //                 location: updatedInstrument.location || null,
+  //                 returning: updatedInstrument.returning || null,
+  //                 waiting: updatedInstrument.waiting || null,    
+  //                 rejecting: updatedInstrument.rejecting || null,
+  //               }
+  //               : instrument
+  //           )
+  //         );
+  //       }
+
+  //       //console.log("Instrument released successfully!");
+  //       setIsLoading(false);
+  //     }, 1000);
+  //     // Add the instrument to the returningInstruments array
+  //     setReturningInstruments((prevReturning) => [...prevReturning, selectedInstrumentId]);
+  //     console.log("Instrument released successfully by super user!");
+  //    } catch (error) {
+  //     console.error("Failed to release instrument:", error);
+  //   }
+  // };
+
   const handleReleaseInstrument = async (id) => {
     try {
       setIsLoading(true);
-
+  
       // Determine if the current user is a super user
-      const isSuperUser = user && user.username === "super user"; // replace "superUser" with the actual super user's username
-
+      const isSuperUser = user && user.username === "super user";
+  
       // Find the instrument being released
       const instrumentToRelease = instruments.find(instr => instr._id === id);
-
+  
       // If the instrument is not found, return early
       if (!instrumentToRelease) {
         console.error("Instrument not found:", id);
         return;
       }
-
+  
       // Check if the current user is the one who booked the instrument or if they are a super user
       const canRelease = (user && instrumentToRelease.bookedBy && (instrumentToRelease.bookedBy._id === user.id || instrumentToRelease.bookedBy === user.id)) || isSuperUser;
-
+  
       if (!canRelease) {
         console.log("You do not have permission to release this instrument.");
         return;
       }
+  
+      // Handle the release logic differently for super user and regular users
+      if (isSuperUser) {
+        // Super user logic to actually release the instrument
+        setTimeout(async () => {
+          // Release the instrument
+          await releaseInstrument(user.id, id);
+          // Update its returning status
+          await markInstrumentAsReturning(id, true); // This will set returning to true
+          await markInstrumentAsReleased(id, false); // This will set returning to false
+          const updatedInstrument = await getInstrumentStatus(id);
+          // Update local states
+          updateInstrumentStates(updatedInstrument, id);
+          // Remove from pending release
+          setPendingReleaseInstruments(prev => prev.filter(instrId => instrId !== id));
+          console.log("Instrument released successfully by super user!");
+          setIsLoading(false);
+        }, 1000);
+      } else {
+        // Regular user logic to simulate the release action
+        // Add to pending release
+        await markInstrumentAsReleased(id, true); // This will set returning to true
+        setPendingReleaseInstruments(prev => [...prev, id]);
+        console.log("Release pending admin approval. Instrument ID:", id);
+        setIsLoading(false);
+        // Simulate adding to the returningInstruments array for UI purposes
+        setReturningInstruments((prevReturning) => [...prevReturning, id]);
+      }
+    } catch (error) {
+      console.error("Failed to release instrument:", error);
+      setIsLoading(false);
+    }
+  };
 
+  // const handleRejectedInstrument = async (id) => {
+  //   try {
+  //     setIsLoading(true);
+  
+  //     // Determine if the current user is a super user
+  //     const isSuperUser = user && user.username === "super user";
+  
+  //     // Find the instrument being released
+  //     const instrumentToRelease = instruments.find(instr => instr._id === id);
+  
+  //     // If the instrument is not found, return early
+  //     if (!instrumentToRelease) {
+  //       console.error("Instrument not found:", id);
+  //       return;
+  //     }
+  
+  //     // Check if the current user is the one who booked the instrument or if they are a super user
+  //     const canRelease = (user && instrumentToRelease.bookedBy && (instrumentToRelease.bookedBy._id === user.id || instrumentToRelease.bookedBy === user.id)) || isSuperUser;
+  
+  //     if (!canRelease) {
+  //       console.log("You do not have permission to release this instrument.");
+  //       return;
+  //     }
+  
+  //     // Handle the release logic differently for super user and regular users
+  //     if (isSuperUser) {
+  //       // Super user logic to actually release the instrument
+  //       setTimeout(async () => {
+  //         // Release the instrument
+  //         await releaseInstrument(user.id, id);
+  //         // Update its returning status
+  //         await markInstrumentAsReturning(id, true); // This will set returning to true
+  //         await markInstrumentAsReleased(id, false); // This will set returning to false
+  //         const updatedInstrument = await getInstrumentStatus(id);
+  //         // Update local states
+  //         updateInstrumentStates(updatedInstrument, id);
+  //         // Remove from pending release
+  //         setPendingReleaseInstruments(prev => prev.filter(instrId => instrId !== id));
+  //         console.log("Instrument released successfully by super user!");
+  //         setIsLoading(false);
+  //       }, 1000);
+  //     } else {
+  //       // Regular user logic to simulate the release action
+  //       // Add to pending release
+  //       await markInstrumentAsReleased(id, true); // This will set returning to true
+  //       setPendingReleaseInstruments(prev => [...prev, id]);
+  //       console.log("Release pending admin approval. Instrument ID:", id);
+  //       setIsLoading(false);
+  //       // Simulate adding to the returningInstruments array for UI purposes
+  //       setReturningInstruments((prevReturning) => [...prevReturning, id]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to release instrument:", error);
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const updateInstrumentStates = (updatedInstrument, id) => {
+    // Update instrumentStatuses
+    setInstrumentStatuses((prevStatuses) => ({
+      ...prevStatuses,
+      [id]: updatedInstrument.availability ? "Available" : "Booked",
+    }));
+    // Update instruments and filteredInstruments
+    updateInstrumentsState(updatedInstrument, id);
+    // Update the filtered view (instrumentsBookedByMe) if applicable
+    if (bookedByMode) {
+      setInstrumentsBookedByMe((prevInstruments) =>
+      prevInstruments.map((instrument) =>
+        instrument._id === id
+          ? {
+            ...instrument,
+            bookedBy: updatedInstrument.bookedBy || null,
+            bookedFrom: updatedInstrument.bookedFrom || null,
+            bookedUntil: updatedInstrument.bookedUntil || null,
+            location: updatedInstrument.location || null,
+            returning: updatedInstrument.returning || null,
+            waiting: updatedInstrument.waiting || null,    
+            rejecting: updatedInstrument.rejecting || null,
+            releasing: updatedInstrument.releasing || null,
+          }
+          : instrument
+      )
+    );
+    }
+  };
+  
+  const updateInstrumentsState = (updatedInstrument, id) => {
+    setInstruments((prevInstruments) =>
+    prevInstruments.map((instrument) =>
+      instrument._id === id
+        ? {
+          ...instrument,
+          bookedBy: updatedInstrument.bookedBy || null,
+          bookedFrom: updatedInstrument.bookedFrom || null,
+          bookedUntil: updatedInstrument.bookedUntil || null,
+          location: updatedInstrument.location || null,
+          returning: updatedInstrument.returning || null,
+          waiting: updatedInstrument.waiting || null,
+          rejecting: updatedInstrument.rejecting || null,
+          releasing: updatedInstrument.releasing || null,
+        }
+        : instrument
+      )
+    );
+    setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null,  
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+      )
+    );
+  };
+
+  const handleCancelBooking = async (id) => {
+    try {
+      setIsLoading(true);
       setTimeout(async () => {
         // Release the instrument
         await releaseInstrument(user.id, id);
-        // After releasing the instrument, update its returning status
-        await markInstrumentAsReturning(id, true); // This will set returning to true
+        await markInstrumentAsCancelBooking(id, false, false); // This will set waiting and returning to false
 
         // Fetch the updated instrument data
         const updatedInstrument = await getInstrumentStatus(id);
-
 
         // Update instrumentStatuses
         setInstrumentStatuses((prevStatuses) => ({
@@ -259,6 +539,8 @@ const InstrumentList = () => {
                 location: updatedInstrument.location || null,
                 returning: updatedInstrument.returning || null,
                 waiting: updatedInstrument.waiting || null,
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
               }
               : instrument
           )
@@ -274,7 +556,9 @@ const InstrumentList = () => {
                 bookedUntil: updatedInstrument.bookedUntil || null,
                 location: updatedInstrument.location || null,
                 returning: updatedInstrument.returning || null,
-                waiting: updatedInstrument.waiting || null,                
+                waiting: updatedInstrument.waiting || null,  
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
               }
               : instrument
           )
@@ -292,23 +576,105 @@ const InstrumentList = () => {
                   bookedUntil: updatedInstrument.bookedUntil || null,
                   location: updatedInstrument.location || null,
                   returning: updatedInstrument.returning || null,
-                  waiting: updatedInstrument.waiting || null,                  
+                  waiting: updatedInstrument.waiting || null,  
+                  rejecting: updatedInstrument.rejecting || null,
+                  releasing: updatedInstrument.releasing || null,
                 }
                 : instrument
             )
           );
         }
 
-        console.log("Instrument released successfully!");
+        console.log("Instrument booking canceled successfully!");
         setIsLoading(false);
       }, 1000);
-      // Add the instrument to the returningInstruments array
-      setReturningInstruments((prevReturning) => [...prevReturning, selectedInstrumentId]);
     } catch (error) {
-      console.error("Failed to release instrument:", error);
+      console.error("Failed to cancel instrument:", error);
     }
   };
 
+  const handleRejectInstrument = async (id) => {
+    try {
+      // setIsLoading(true);
+      setTimeout(async () => {
+        // // Release the instrument
+        // await releaseInstrument(user.id, id);
+        await markInstrumentAsRejected(id, true); // This will set waiting and returning to false
+
+        // Fetch the updated instrument data
+        const updatedInstrument = await getInstrumentStatus(id);
+
+        // Update instrumentStatuses
+        setInstrumentStatuses((prevStatuses) => ({
+          ...prevStatuses,
+          [id]: updatedInstrument.availability ? "Available" : "Booked",
+        }));
+
+        // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
+        setInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null,
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null, 
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        // Update the filtered view (instrumentsBookedByMe) if applicable
+        if (bookedByMode) {
+          setInstrumentsBookedByMe((prevInstruments) =>
+            prevInstruments.map((instrument) =>
+              instrument._id === id
+                ? {
+                  ...instrument,
+                  bookedBy: updatedInstrument.bookedBy || null,
+                  bookedFrom: updatedInstrument.bookedFrom || null,
+                  bookedUntil: updatedInstrument.bookedUntil || null,
+                  location: updatedInstrument.location || null,
+                  returning: updatedInstrument.returning || null,
+                  waiting: updatedInstrument.waiting || null, 
+                  rejecting: updatedInstrument.rejecting || null,
+                  releasing: updatedInstrument.releasing || null,
+                }
+                : instrument
+            )
+          );
+        }
+
+        console.log("Instrument booking rejected successfully!");
+        // setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to reject instrument:", error);
+    }
+  };
 
   const handleViewBookedByMe = () => {
     if (!user) {
@@ -441,7 +807,215 @@ const handleReturningClick = async (id) => {
   }
 };
 
-  
+// When clicking the "Returning the instrument" button
+const handleReleasingClick = async (id) => {
+  // Check if the current user is the super user
+  if (user && user.username === "super user") {
+    // Optimistically update the UI to reflect that the instrument is no longer returning
+    setFilteredInstruments((prevInstruments) =>
+      prevInstruments.map((instrument) =>
+        instrument._id === id ? { ...instrument, releasing: false } : instrument
+      )
+    );
+
+    try {
+      setIsLoading(true);
+      setTimeout(async () => {
+      // Release the instrument
+      await markInstrumentAsReleased(id, false); // This will set releasing to false
+      await releaseInstrument(user.id, id);
+        // Fetch the updated instrument data
+        const updatedInstrument = await getInstrumentStatus(id);
+
+        // Update instrumentStatuses
+        setInstrumentStatuses((prevStatuses) => ({
+          ...prevStatuses,
+          [id]: updatedInstrument.availability ? "Available" : "Booked",
+        }));
+
+        // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
+        setInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null,
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null, 
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        // Update the filtered view (instrumentsBookedByMe) if applicable
+        if (bookedByMode) {
+          setInstrumentsBookedByMe((prevInstruments) =>
+            prevInstruments.map((instrument) =>
+              instrument._id === id
+                ? {
+                  ...instrument,
+                  bookedBy: updatedInstrument.bookedBy || null,
+                  bookedFrom: updatedInstrument.bookedFrom || null,
+                  bookedUntil: updatedInstrument.bookedUntil || null,
+                  location: updatedInstrument.location || null,
+                  returning: updatedInstrument.returning || null,
+                  waiting: updatedInstrument.waiting || null, 
+                  rejecting: updatedInstrument.rejecting || null,
+                  releasing: updatedInstrument.releasing || null,
+                }
+                : instrument
+            )
+          );
+        }
+
+        console.log("Instrument released successfully!");
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error while updating releasing status:", error);
+      // Revert the optimistic update if the API call fails
+      setFilteredInstruments((prevInstruments) =>
+        prevInstruments.map((instrument) =>
+          instrument._id === id ? { ...instrument, releasing: true } : instrument
+        )
+      );
+      // Update the local state to remove the instrument from the waitingToTake list
+      setPendingReleaseInstruments((prevReleasing) => prevReleasing.filter((instrId) => instrId !== id));
+    }
+  } else {
+    console.log("Only the super user can perform this action.");
+  }
+};
+
+// When clicking the "Rejecting the instrument" button
+const handleRejectingClick = async (id) => {
+  // Find the instrument being rejected
+  const instrumentToReject = instruments.find(instr => instr._id === id);
+  // If the instrument is not found, return early
+  if (!instrumentToReject) {
+    console.error("Instrument not found:", id);
+    return;
+  }
+
+  // Check if the current user is the one who booked the instrument or if they are a super user
+  const canReject = (user && instrumentToReject.bookedBy && (instrumentToReject.bookedBy._id === user.id || instrumentToReject.bookedBy === user.id));
+
+  if (!canReject) {
+    console.log("You do not have permission to release this instrument.");
+    return;
+  }
+
+   // Optimistically update the UI to reflect that the instrument is no longer rejecting
+    setFilteredInstruments((prevInstruments) =>
+      prevInstruments.map((instrument) =>
+        instrument._id === id ? { ...instrument, rejecting: false } : instrument
+      )
+    );
+
+    try {
+      setIsLoading(true);
+      setTimeout(async () => {
+      // Release the instrument
+      await releaseInstrument(user.id, id);
+      await markInstrumentAsRejected(id, false); // This will set waiting and returning to false
+
+        // Fetch the updated instrument data
+        const updatedInstrument = await getInstrumentStatus(id);
+
+        // Update instrumentStatuses
+        setInstrumentStatuses((prevStatuses) => ({
+          ...prevStatuses,
+          [id]: updatedInstrument.availability ? "Available" : "Booked",
+        }));
+
+        // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
+        setInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null,
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        setFilteredInstruments((prevFilteredInstruments) =>
+          prevFilteredInstruments.map((instrument) =>
+            instrument._id === id
+              ? {
+                ...instrument,
+                bookedBy: updatedInstrument.bookedBy || null,
+                bookedFrom: updatedInstrument.bookedFrom || null,
+                bookedUntil: updatedInstrument.bookedUntil || null,
+                location: updatedInstrument.location || null,
+                returning: updatedInstrument.returning || null,
+                waiting: updatedInstrument.waiting || null, 
+                rejecting: updatedInstrument.rejecting || null,
+                releasing: updatedInstrument.releasing || null,
+              }
+              : instrument
+          )
+        );
+
+        // Update the filtered view (instrumentsBookedByMe) if applicable
+        if (bookedByMode) {
+          setInstrumentsBookedByMe((prevInstruments) =>
+            prevInstruments.map((instrument) =>
+              instrument._id === id
+                ? {
+                  ...instrument,
+                  bookedBy: updatedInstrument.bookedBy || null,
+                  bookedFrom: updatedInstrument.bookedFrom || null,
+                  bookedUntil: updatedInstrument.bookedUntil || null,
+                  location: updatedInstrument.location || null,
+                  returning: updatedInstrument.returning || null,
+                  waiting: updatedInstrument.waiting || null, 
+                  rejecting: updatedInstrument.rejecting || null,
+                  releasing: updatedInstrument.releasing || null,
+                }
+                : instrument
+            )
+          );
+        }
+
+        console.log("Instrument booking rejected successfully!");
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to reject instrument:", error);
+    }
+};
 
   console.log("bookedByMode:", bookedByMode);
   console.log("user:", user);
@@ -508,6 +1082,14 @@ const handleReturningClick = async (id) => {
               : " Unknown"}
           </span>
         </div>
+        <div>
+          <span style={{ fontWeight: "bold" }}>Booked by: </span>
+          {instrument.bookedBy
+            ? typeof instrument.bookedBy === "object"
+              ? instrument.bookedBy.username
+              : instrument.bookedBy
+            : "N/A"}
+        </div>
         {/* Add a visual cue for waiting status */}
         {/* {waitingToTake.includes(instrument._id) && (
           <div style={{ color: 'orange', fontWeight: 'bold' }}>Waiting to be taken</div>
@@ -533,6 +1115,14 @@ const handleReturningClick = async (id) => {
             <div>
               <span style={{ fontWeight: "bold" }}>Returning: </span>
               {instrument.returning ? "Yes" : "No"}
+            </div>
+            <div>
+              <span style={{ fontWeight: "bold" }}>Releasing: </span>
+              {instrument.releasing ? "Yes" : "No"}
+            </div>
+            <div>
+              <span style={{ fontWeight: "bold" }}>Rejecting: </span>
+              {instrument.rejecting ? "Yes" : "No"}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>producer: </span>
@@ -590,14 +1180,14 @@ const handleReturningClick = async (id) => {
               <span style={{ fontWeight: "bold" }}>notes: </span>
               {instrument.notes}
             </div>
-            <div>
+            {/* <div>
               <span style={{ fontWeight: "bold" }}>Booked by: </span>
               {instrument.bookedBy
                 ? typeof instrument.bookedBy === "object"
                   ? instrument.bookedBy.username
                   : instrument.bookedBy
                 : "N/A"}
-            </div>
+            </div> */}
             {/* <div>
             <span style={{ fontWeight: "bold" }}>Booked from: </span>
             {instrument.bookedFrom || "N/A"}
@@ -608,16 +1198,126 @@ const handleReturningClick = async (id) => {
             </div>
           </div>
         )}
+
         {/* Book Button */}
-        {instrumentStatuses[instrument._id] === "Available" && !waitingToTake.includes(instrument._id) && !returningInstruments.includes(instrument._id) && 
-       !instrument.returning && (
+        {/* {instrumentStatuses[instrument._id] === "Available" && !waitingToTake.includes(instrument._id) && !returningInstruments.includes(instrument._id) &&  */}
+        {!instrument.returning && !instrument.waiting && instrumentStatuses[instrument._id] === "Available" && (
+        // !instrument.returning &&(
           <button
             onClick={() => handleBookInstrument(instrument._id)}
             className="book-button"
           >
-            Book
+            Request for Booking
           </button>
         )}
+
+        {instrument._id === promptLoginForInstrumentId && (
+          <div className="login-prompt">
+            You must be logged in to book this instrument.
+          </div>
+        )}
+
+   
+        {/* Release Button*/}
+        {/* {instrumentStatuses[instrument._id] === "Booked" &&
+          instrument.bookedBy &&
+          user &&
+          (instrument.bookedBy._id === user.id ||
+            instrument.bookedBy === user.id || user.username === "super user") && !instrument.rejecting && !instrument.waiting && (
+            <div>
+              {isLoading && (
+                <div className="loading-container">
+                  <div className="spinner"></div>
+                  <span className="loading-text">Releasing...</span>
+                </div>
+              )}
+              <button
+                onClick={() => handleReleaseInstrument(instrument._id)}
+                style={{
+                  marginTop: "10px",
+                  // backgroundColor: "#808080", // Choose a color that denotes a release action
+                  backgroundColor: "#FF0000", // Changed to red
+                  color: "white",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  //width: "100%",
+                }}
+              >
+                Release
+              </button>
+            </div>
+          )} */}
+
+        {/* Release Button */}
+        {instrumentStatuses[instrument._id] === "Booked" &&
+          (instrument.bookedBy && user && (instrument.bookedBy._id === user.id || instrument.bookedBy === user.id || user.username === "super user")) &&
+          !instrument.rejecting && !instrument.waiting && (
+            <div>
+              {/* Spinner for Loading State */}
+              {isLoading && (
+                <div className="loading-container">
+                  <div className="spinner"></div>
+                  <span className="loading-text">Releasing...</span>
+                </div>
+              )}
+
+              {/* Modification: Check if the instrument is in the pendingReleaseInstruments array */}
+              {(pendingReleaseInstruments.includes(instrument._id) || instrument.releasing) ? (
+                <button
+                  onClick={() => handleReleasingClick(instrument._id)}
+                  className="pending-release"
+                >
+                  {/* user is releasing instrument */}
+                  Release pending admin approval...
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleReleaseInstrument(instrument._id)}
+                  style={{
+                    marginTop: "10px",
+                    backgroundColor: "#FF0000", // Red for release action
+                    color: "white",
+                    border: "none",
+                    padding: "5px 10px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Release
+                </button>
+              )}
+            </div>
+          )}
+
+        {instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy && user && !instrument.returning && instrument.waiting &&
+          (instrument.bookedBy._id === user.id ||
+            instrument.bookedBy === user.id) && (
+            <div>
+              {isLoading && (
+                <div className="loading-container">
+                  <div className="spinner"></div>
+                  <span className="loading-text">Cancel Booking...</span>
+                </div>
+              )}
+              <button
+                onClick={() => handleCancelBooking(instrument._id)}
+                style={{
+                  marginTop: "10px",
+                  backgroundColor: "#808080", // Choose a color that denotes a release action
+                  color: "white",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  //width: "100%", // Set the width to 100% to span the entire container
+                }}
+              >
+                Cancel Booking Request
+              </button>
+            </div>
+          )}
 
         {/* Waiting to take the instrument Button */}
         {instrument.waiting && !instrument.returning && (
@@ -630,30 +1330,6 @@ const handleReturningClick = async (id) => {
           </button>
         )}
 
-        {/* Release Button*/}
-        {instrumentStatuses[instrument._id] === "Booked" &&
-          ((instrument.bookedBy && user && instrument.bookedBy._id === user.id) || (user && user.username === "super user")) &&
-          !instrument.waiting && !returningInstruments.includes(instrument._id) && (
-            <div>
-              {isLoading ? (
-                <div className="loading-container">
-                  <div className="spinner"></div>
-                  <span className="loading-text">Releasing...</span>
-                </div>
-                ) : (
-                // Here we check if the current user is the super user before rendering the Release button
-                user && user.username === "super user" && (
-                  <button
-                    onClick={() => handleReleaseInstrument(instrument._id)}
-                    className="release-button"
-                  >
-                    Release
-                  </button>
-                )
-              )}
-            </div>
-          )}
-
         {/* Instrument is returning back Button */}
         {!instrument.waiting && instrument.returning && (
           <button
@@ -664,11 +1340,52 @@ const handleReturningClick = async (id) => {
             Not yet bookable: Waiting for the admin retrieval...
           </button>
         )}
+
+        {/* Rejecting the instrument Button */}
+        {
+          instrument.rejecting && (
+            <button
+              onClick={() => handleRejectingClick(instrument._id)}
+              className="rejecting-button"
+            >
+              The Admin has rejected this booking...(User must click to Release the Instrument)
+            </button>
+          )
+        }
+
+
+        {/* Reject Button*/}
+        {
+          (user && user.username === "super user") && instrument.waiting && !instrument.returning &&
+          (
+            <div>
+              {isLoading ? (
+                <div className="loading-container">
+                  <div className="spinner"></div>
+                  <span className="loading-text">Rejecting...</span>
+                </div>
+              ) : (
+                // Here we check if the current user is the super user before rendering the Rejecting button
+                user && user.username === "super user" && (
+                  <button
+                    onClick={() => handleRejectInstrument(instrument._id)}
+                    className="rejecting-button"
+                  >
+                    Reject
+                  </button>
+                )
+              )}
+            </div>
+          )
+        }
       </div>
     );
   };
-//fourth section
-  const AllInstrumentsView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm }) => {
+
+
+
+
+  const AllInstrumentsView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm }) => {
     return (
       <div>
         {/* Buttons to filter the view */}
@@ -715,18 +1432,23 @@ const handleReturningClick = async (id) => {
             // Apply your search filter based on 'searchTerm'
             const searchTermLC = searchTerm.toLowerCase();
             const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
-
             // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-
+            const matchesBookedby = instrument.bookedBy ? 
+            (typeof instrument.bookedBy === "object" ? 
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+            false;          
             // Combine all filter conditions using logical OR (||)
             return (
               matchesDescription ||
               matchesEquipment ||
-              matchesModel
+              matchesModel ||
+              matchesBookedby
             );
           })
           .map((instrument) => {
@@ -737,7 +1459,7 @@ const handleReturningClick = async (id) => {
     );
   };
 
-  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, handleViewAllInstruments }) => {
+  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments}) => {
     return (
       <div>
         <button
@@ -762,21 +1484,29 @@ const handleReturningClick = async (id) => {
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesBookedby = instrument.bookedBy ? 
+            (typeof instrument.bookedBy === "object" ? 
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+            false;  
 
             return (
               matchesDescription ||
               matchesEquipment ||
-              matchesModel
+              matchesModel ||
+              matchesBookedby
             );
           })
-          .filter((instrument) => instrument.bookedBy && instrument.bookedBy._id === user.id)
+          //.filter((instrument) => instrument.bookedBy && instrument.bookedBy._id === user.id) //<=== id undefined
+          .filter((instrument) => instrument.bookedBy)
           .map((instrument) => renderInstrumentDetails(instrument))}
       </div>
     );
   };
 
-  const BookedByAllUsersView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+  const BookedByAllUsersView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
     return (
       <div>
         <button
@@ -801,12 +1531,18 @@ const handleReturningClick = async (id) => {
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-
+            const matchesBookedby = instrument.bookedBy ? 
+            (typeof instrument.bookedBy === "object" ? 
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+            false;  
             return (
               matchesDescription ||
               matchesEquipment ||
-              matchesModel
+              matchesModel ||
+              matchesBookedby
             );
           })
           .filter((instrument) => instrument.bookedBy)
@@ -815,7 +1551,6 @@ const handleReturningClick = async (id) => {
     );
   };
 
-//Last section
   return (
     <div>
       <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
@@ -858,6 +1593,17 @@ const handleReturningClick = async (id) => {
             fontSize: "1em" // Adjust as needed
           }}
         />
+        <input
+          type="text"
+          placeholder="Search by user..."
+          value={bookedbySearchTerm}
+          onChange={(e) => setBookedBySearchTerm(e.target.value)}
+          style={{
+            fontWeight: "bold",
+            border: "2px solid blue",
+            fontSize: "1em" // Adjust as needed
+          }}
+        />
       </div>
       {viewMode === "byMe" && (
         <BookedByMeView
@@ -865,6 +1611,7 @@ const handleReturningClick = async (id) => {
           equipmentSearchTerm={equipmentSearchTerm}
           modelSearchTerm={modelSearchTerm}
           handleViewAllInstruments={handleViewAllInstruments}
+          filteredInstruments={filteredInstruments}
         />
       )}
       {viewMode === "byAll" && (

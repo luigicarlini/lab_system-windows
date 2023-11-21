@@ -115,7 +115,7 @@ const BookingModal = ({
       {bookingSuccess ? (
         <>
           <p style={{ fontWeight: "bold", color: "green" }}>
-            Booking Successful!
+            Request for Booking Successfull!
           </p>
           <button onClick={handleNavigate}>Return to Instrument List</button>
         </>
