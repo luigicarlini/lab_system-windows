@@ -118,10 +118,22 @@ export const markInstrumentAsRejected = async (id, isRejecting = true) => {
       const response = await axios.post(`${BASE_URL}/api/instruments/reject/${id}`, { rejecting: isRejecting });
       return response.data;
   } catch (error) {
-      console.error("Error during marking user as canceling:", error);
+      console.error("Error during marking user as rejecting:", error);
       throw error;
   }
 };
+
+export const markInstrumentRejectApproval = async (id, isRejectingApproval = true) => {
+  console.log(`markInstrumentRejectingApproval: Attempting to set rejectingapproval status for instrument with ID: ${id} to isRejectingApproval= ${isRejectingApproval}`);
+  try {
+      const response = await axios.post(`${BASE_URL}/api/instruments/rejectapproval/${id}`, { rejectingapproval: isRejectingApproval });
+      return response.data;
+  } catch (error) {
+      console.error("Error during marking user as rejectingApproval:", error);
+      throw error;
+  }
+};
+
 
 // Default export containing all functions
 const api = {
@@ -133,7 +145,8 @@ const api = {
   markInstrumentAsWaiting,      // <-- Added
   markInstrumentAsCancelBooking,// <-- Added
   markInstrumentAsRejected,     // <-- Added
-  markInstrumentAsReleased     // <-- Added
+  markInstrumentAsReleased,     // <-- Added
+  markInstrumentRejectApproval
 };
 
 export default api;

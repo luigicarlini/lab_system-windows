@@ -268,6 +268,8 @@ router.post('/reject/:id', async (req, res) => {
     instrument.rejecting = req.body.rejecting;
     instrument.waiting = false;
     instrument.returning = false;
+    //instrument.rejectingapproval = false;
+
     if (!instrument.rejecting) {
       instrument.originalLocation = null;
       instrument.bookedBy = null;
@@ -277,6 +279,37 @@ router.post('/reject/:id', async (req, res) => {
     await instrument.save();
     res.status(200).json({ 
       message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejecting}`, 
+      instrument 
+  });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// Route for a user to toggle the "cancel" the booking for an instrument
+router.post('/rejectapproval/:id', async (req, res) => {
+  try {
+    const instrument = await Instrument.findById(req.params.id);
+    if (!instrument) {
+        return res.status(404).json({ message: "Instrument not found" });
+    }
+    // Toggle the 'waiting' status based on the request body
+    // If 'waiting' is not provided in the request, default to true
+    console.log("backend instrument.rejectapproval:", req.body.rejectingapproval);
+
+    instrument.rejectingapproval = req.body.rejectingapproval;
+    instrument.waiting = false;
+    instrument.returning = false;
+    if (!instrument.rejectingapproval) {
+      instrument.originalLocation = null;
+      instrument.bookedBy = null;
+      instrument.bookedFrom = null; // Adjusted the property names
+      instrument.bookedUntil = null; // Adjusted the property names
+    }
+    await instrument.save();
+    res.status(200).json({ 
+      message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejectingapproval}`, 
       instrument 
   });
   } catch (err) {

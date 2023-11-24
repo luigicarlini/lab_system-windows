@@ -111,6 +111,10 @@ const instrumentSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  rejectingapproval: {
+    type: Boolean,
+    default: false
+  },
   availability: {
     type: Boolean,
     required: true,
