@@ -67,6 +67,14 @@
     animation: spin 2s linear infinite;
 }
 
+.spinner-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh; /* Adjust this value based on your layout */
+    flex-direction: column;
+  }
+
 .loading-text {
     font-weight: bold;
     color: #014C8C;

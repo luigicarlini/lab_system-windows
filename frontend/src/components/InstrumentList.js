@@ -115,6 +115,7 @@ const InstrumentList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true); // Start loading
       try {
         const allInstruments = await getAllInstruments();
         setInstruments(allInstruments);
@@ -124,18 +125,75 @@ const InstrumentList = () => {
           )
         );
         const statusMap = {};
+        let isUnknownStatusPresent = false;
         allInstruments.forEach((instrument, index) => {
-          statusMap[instrument._id] = statuses[index].availability
-            ? "Available"
-            : "Booked";
+          statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";
+          if (statuses[index].availability === "Unknown") {
+            isUnknownStatusPresent = true;
+          }
         });
         setInstrumentStatuses(statusMap);
+        if (!isUnknownStatusPresent) {
+          setIsLoading(false); // Stop loading if no Unknown status
+        }
       } catch (error) {
         console.error("Error fetching instruments:", error);
+        setIsLoading(false); // Stop loading in case of error
       }
     };
     fetchData();
   }, [bookingMade]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoading(true); // Start loading
+  
+  //     // Attempt to use cached data
+  //     const cachedStatuses = localStorage.getItem('instrumentStatuses');
+  //     if (cachedStatuses) {
+  //       const statusMap = JSON.parse(cachedStatuses);
+  //       setInstrumentStatuses(statusMap);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  
+  //     try {
+  //       const allInstruments = await getAllInstruments();
+  //       setInstruments(allInstruments);
+  
+  //       const statuses = await Promise.all(
+  //         allInstruments.map((instrument) =>
+  //           getInstrumentStatus(instrument._id)
+  //         )
+  //       );
+  
+  //       const statusMap = {};
+  //       let isUnknownStatusPresent = false;
+  //       allInstruments.forEach((instrument, index) => {
+  //         statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";
+  //         if (statuses[index].availability === "Unknown") {
+  //           isUnknownStatusPresent = true;
+  //         }
+  //       });
+  
+  //       setInstrumentStatuses(statusMap);
+  
+  //       if (!isUnknownStatusPresent) {
+  //         setIsLoading(false); // Stop loading if no Unknown status
+  //       }
+  
+  //       // Cache the statusMap in local storage
+  //       localStorage.setItem('instrumentStatuses', JSON.stringify(statusMap));
+  //     } catch (error) {
+  //       console.error("Error fetching instruments:", error);
+  //       setIsLoading(false); // Stop loading in case of error
+  //     }
+  //   };
+  
+  //   fetchData();
+  // }, [bookingMade]);
+  
+  
 
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
@@ -1054,19 +1112,6 @@ const handleReleasingClick = async (id) => {
           <div style={{ color: 'orange', fontWeight: 'bold' }}>Returning</div>
         )} */}
 
-        {instrument._id === promptLoginForInstrumentId && (
-          <div className="login-prompt">
-            You must be logged in to book this instrument.
-          </div>
-        )}
-
-
-        {instrument._id === promptLoginForInstrumentId && (
-          <div className="login-prompt">
-            You must be logged in to book this instrument.
-          </div>
-        )}
-
         {/* Updated: Expand/Collapse Button */}
         <button onClick={() => toggleInstrumentDetails(instrument._id)}>
           {expandedInstrumentId === instrument._id ? "Collapse" : "Expand"}
@@ -1407,8 +1452,17 @@ const handleReleasingClick = async (id) => {
           Booked By All Users
         </button>
 
+        {/* Spinner shown when data is loading */}
+        {isLoading && (
+          <div className="spinner-center">
+            <div className="spinner"></div>
+            Loading instruments...
+          </div>
+        )}
+        
+        {/* Render instrument details only when not loading */}
         {/* List of all instruments */}
-        {filteredInstruments
+        {!isLoading && filteredInstruments
           .filter((instrument) => {
             // Apply your search filter based on 'searchTerm'
             const searchTermLC = searchTerm.toLowerCase();
@@ -1439,6 +1493,7 @@ const handleReleasingClick = async (id) => {
       </div>
     );
   };
+
 
   const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments}) => {
     return (

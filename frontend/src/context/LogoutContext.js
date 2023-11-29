@@ -52,6 +52,8 @@ export const LogoutProvider = ({ children }) => {
         setSuccessMessage('Logout successful!');
         setUser(null); // <-- 'setUser' function or 'user' state is not defined here
         //localStorage.removeItem('token');  // Now clear the token from localStorage
+        // Add this line to clear the instrument status cache
+        localStorage.removeItem('instrumentStatuses');
         setTimeout(() => {
           setSuccessMessage(null); // Clear the success message
           navigate('/');  // Redirecting using navigate
