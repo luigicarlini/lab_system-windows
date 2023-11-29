@@ -113,60 +113,17 @@ const InstrumentList = () => {
   }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, bookedByMode, user]);
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // Start loading
-      try {
-        const allInstruments = await getAllInstruments();
-        setInstruments(allInstruments);
-        const statuses = await Promise.all(
-          allInstruments.map((instrument) =>
-            getInstrumentStatus(instrument._id)
-          )
-        );
-        const statusMap = {};
-        let isUnknownStatusPresent = false;
-        allInstruments.forEach((instrument, index) => {
-          statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";
-          if (statuses[index].availability === "Unknown") {
-            isUnknownStatusPresent = true;
-          }
-        });
-        setInstrumentStatuses(statusMap);
-        if (!isUnknownStatusPresent) {
-          setIsLoading(false); // Stop loading if no Unknown status
-        }
-      } catch (error) {
-        console.error("Error fetching instruments:", error);
-        setIsLoading(false); // Stop loading in case of error
-      }
-    };
-    fetchData();
-  }, [bookingMade]);
-
   // useEffect(() => {
   //   const fetchData = async () => {
   //     setIsLoading(true); // Start loading
-  
-  //     // Attempt to use cached data
-  //     const cachedStatuses = localStorage.getItem('instrumentStatuses');
-  //     if (cachedStatuses) {
-  //       const statusMap = JSON.parse(cachedStatuses);
-  //       setInstrumentStatuses(statusMap);
-  //       setIsLoading(false);
-  //       return;
-  //     }
-  
   //     try {
   //       const allInstruments = await getAllInstruments();
   //       setInstruments(allInstruments);
-  
   //       const statuses = await Promise.all(
   //         allInstruments.map((instrument) =>
   //           getInstrumentStatus(instrument._id)
   //         )
   //       );
-  
   //       const statusMap = {};
   //       let isUnknownStatusPresent = false;
   //       allInstruments.forEach((instrument, index) => {
@@ -175,23 +132,63 @@ const InstrumentList = () => {
   //           isUnknownStatusPresent = true;
   //         }
   //       });
-  
   //       setInstrumentStatuses(statusMap);
-  
   //       if (!isUnknownStatusPresent) {
   //         setIsLoading(false); // Stop loading if no Unknown status
   //       }
-  
-  //       // Cache the statusMap in local storage
-  //       localStorage.setItem('instrumentStatuses', JSON.stringify(statusMap));
   //     } catch (error) {
   //       console.error("Error fetching instruments:", error);
   //       setIsLoading(false); // Stop loading in case of error
   //     }
   //   };
-  
   //   fetchData();
   // }, [bookingMade]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true); // Start loading
+  
+      try {
+        const allInstruments = await getAllInstruments();
+        setInstruments(allInstruments);
+  
+        // Retrieve cached statuses or initialize an empty object
+        const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatuses')) || {};
+        const statusMap = { ...cachedStatuses };
+  
+        // Fetch statuses for all instruments
+        const statuses = await Promise.all(
+          allInstruments.map((instrument) =>
+            getInstrumentStatus(instrument._id)
+          )
+        );
+  
+        let isUnknownStatusPresent = false;
+        allInstruments.forEach((instrument, index) => {
+          const currentStatus = statuses[index].availability ? "Available" : "Booked";
+          statusMap[instrument._id] = currentStatus;
+          if (currentStatus === "Unknown") {
+            isUnknownStatusPresent = true;
+          }
+        });
+  
+        setInstrumentStatuses(statusMap);
+  
+        // Update the cache with the latest statuses
+        localStorage.setItem('instrumentStatuses', JSON.stringify(statusMap));
+  
+        if (!isUnknownStatusPresent) {
+          setIsLoading(false); // Stop loading if no Unknown status
+        }
+      } catch (error) {
+        console.error("Error fetching instruments:", error);
+        setIsLoading(false); // Stop loading in case of error
+      }
+    };
+  
+    fetchData();
+  }, [bookingMade]);
+  
   
   
 
