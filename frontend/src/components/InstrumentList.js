@@ -259,6 +259,7 @@ const InstrumentList = () => {
             instrument._id === selectedInstrumentId
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -355,6 +356,7 @@ const InstrumentList = () => {
         instrument._id === id
           ? {
             ...instrument,
+            availability: updatedInstrument.availability || null,
             bookedBy: updatedInstrument.bookedBy || null,
             bookedFrom: updatedInstrument.bookedFrom || null,
             bookedUntil: updatedInstrument.bookedUntil || null,
@@ -377,6 +379,7 @@ const InstrumentList = () => {
       instrument._id === id
         ? {
           ...instrument,
+          availability: updatedInstrument.availability || null,
           bookedBy: updatedInstrument.bookedBy || null,
           bookedFrom: updatedInstrument.bookedFrom || null,
           bookedUntil: updatedInstrument.bookedUntil || null,
@@ -395,6 +398,7 @@ const InstrumentList = () => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -433,6 +437,7 @@ const InstrumentList = () => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -452,6 +457,7 @@ const InstrumentList = () => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -473,6 +479,7 @@ const InstrumentList = () => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -503,7 +510,7 @@ const InstrumentList = () => {
         // // Release the instrument
         await releaseInstrument(user.id, id);
         await markInstrumentAsRejected(id, true); // This will set Rejected and RejectApproval to false
-        await markInstrumentRejectApproval(id, false);
+        await markInstrumentRejectApproval(id, true);
 
 
         // Fetch the updated instrument data
@@ -521,6 +528,7 @@ const InstrumentList = () => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -540,6 +548,7 @@ const InstrumentList = () => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -561,6 +570,7 @@ const InstrumentList = () => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -747,6 +757,7 @@ const handleReleasingClick = async (id) => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -766,6 +777,7 @@ const handleReleasingClick = async (id) => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -787,6 +799,7 @@ const handleReleasingClick = async (id) => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -860,6 +873,7 @@ const handleReleasingClick = async (id) => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -879,6 +893,7 @@ const handleReleasingClick = async (id) => {
             instrument._id === id
               ? {
                 ...instrument,
+                availability: updatedInstrument.availability || null,
                 bookedBy: updatedInstrument.bookedBy || null,
                 bookedFrom: updatedInstrument.bookedFrom || null,
                 bookedUntil: updatedInstrument.bookedUntil || null,
@@ -900,6 +915,7 @@ const handleReleasingClick = async (id) => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -962,6 +978,7 @@ const handleReleasingClick = async (id) => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -981,6 +998,7 @@ const handleReleasingClick = async (id) => {
               instrument._id === id
                 ? {
                   ...instrument,
+                  availability: updatedInstrument.availability || null,
                   bookedBy: updatedInstrument.bookedBy || null,
                   bookedFrom: updatedInstrument.bookedFrom || null,
                   bookedUntil: updatedInstrument.bookedUntil || null,
@@ -1002,6 +1020,7 @@ const handleReleasingClick = async (id) => {
                 instrument._id === id
                   ? {
                     ...instrument,
+                    availability: updatedInstrument.availability || null,
                     bookedBy: updatedInstrument.bookedBy || null,
                     bookedFrom: updatedInstrument.bookedFrom || null,
                     bookedUntil: updatedInstrument.bookedUntil || null,
@@ -1368,7 +1387,9 @@ const handleReleasingClick = async (id) => {
 
         {/* Rejecting the instrument Button users side*/}
         {
-          (user && user.username !== "super user") && !instrument.rejecting && instrument.rejectingapproval && (
+          // (user && user.username !== "super user") && !instrument.rejecting && instrument.rejectingapproval && (
+          (user && user.username !== "super user") && instrument.rejecting && instrument.rejectingapproval && (
+
             //instrument.rejectingapproval && (
             <button
               onClick={() => handleRejectingUserClick(instrument._id)}

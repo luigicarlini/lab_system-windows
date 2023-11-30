@@ -197,6 +197,8 @@ router.post('/waiting/:id', async (req, res) => {
     console.log("backend instrument.waiting:", instrument.waiting);
     instrument.returning = false;
     instrument.releasing = false;
+    instrument.rejecting = false;
+    instrument.rejectingapproval = false;
     //instrument.returning = instrument.waiting === true ? false : true;
     console.log("backend instrument.returning:", instrument.returning);
     await instrument.save();
