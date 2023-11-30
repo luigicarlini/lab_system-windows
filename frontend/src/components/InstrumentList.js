@@ -143,55 +143,99 @@ const InstrumentList = () => {
   //   };
   //   fetchData();
   // }, [bookingMade]);
+/////////////////////////////////////////////////////////////////KEEP THIS////////////////////////////////////////////////////////
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoading(true); // Start loading
+  
+  //     try {
+  //       const allInstruments = await getAllInstruments();
+  //       setInstruments(allInstruments);
+  
+  //       // Retrieve cached statuses or initialize an empty object
+  //       //const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatuses')) || {};
+  //       const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
+  //       const statusMap = { ...cachedStatuses };
+  
+  //       // Fetch statuses for all instruments
+  //       const statuses = await Promise.all(
+  //         allInstruments.map((instrument) =>
+  //           getInstrumentStatus(instrument._id)
+  //         )
+  //       );
+  
+  //       let isUnknownStatusPresent = false;
+  //       allInstruments.forEach((instrument, index) => {
+  //         const currentStatus = statuses[index].availability ? "Available" : "Booked";
+  //         statusMap[instrument._id] = currentStatus;
+  //         if (currentStatus === "Unknown") {
+  //           isUnknownStatusPresent = true;
+  //         }
+  //       });
+  
+  //       setInstrumentStatuses(statusMap);
+  
+  //       // Update the cache with the latest statuses
+  //       //localStorage.setItem('instrumentStatuses', JSON.stringify(statusMap));
+  //       localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true); // Start loading
   
-      try {
-        const allInstruments = await getAllInstruments();
-        setInstruments(allInstruments);
+  //       if (!isUnknownStatusPresent) {
+  //         setIsLoading(false); // Stop loading if no Unknown status
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching instruments:", error);
+  //       setIsLoading(false); // Stop loading in case of error
+  //     }
+  //   };
   
-        // Retrieve cached statuses or initialize an empty object
-        const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatuses')) || {};
-        const statusMap = { ...cachedStatuses };
-  
-        // Fetch statuses for all instruments
+  //   fetchData();
+  // }, [bookingMade]);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+useEffect(() => {
+  const fetchData = async () => {
+    setIsLoading(true); // Start loading
+
+    try {
+      const allInstruments = await getAllInstruments();
+      setInstruments(allInstruments);
+
+      // Retrieve cached statuses
+      const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
+
+      // Check if the cache is empty or if there's a booking change
+      if (Object.keys(cachedStatuses).length === 0 || bookingMade) {
         const statuses = await Promise.all(
           allInstruments.map((instrument) =>
             getInstrumentStatus(instrument._id)
           )
         );
-  
-        let isUnknownStatusPresent = false;
-        allInstruments.forEach((instrument, index) => {
-          const currentStatus = statuses[index].availability ? "Available" : "Booked";
-          statusMap[instrument._id] = currentStatus;
-          if (currentStatus === "Unknown") {
-            isUnknownStatusPresent = true;
-          }
-        });
-  
-        setInstrumentStatuses(statusMap);
-  
-        // Update the cache with the latest statuses
-        localStorage.setItem('instrumentStatuses', JSON.stringify(statusMap));
-  
-        if (!isUnknownStatusPresent) {
-          setIsLoading(false); // Stop loading if no Unknown status
-        }
-      } catch (error) {
-        console.error("Error fetching instruments:", error);
-        setIsLoading(false); // Stop loading in case of error
-      }
-    };
-  
-    fetchData();
-  }, [bookingMade]);
-  
-  
-  
 
+        const statusMap = {};
+        allInstruments.forEach((instrument, index) => {
+          statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";
+        });
+
+        setInstrumentStatuses(statusMap);
+
+        // Update cache
+        localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
+      } else {
+        // Use cached statuses
+        setInstrumentStatuses(cachedStatuses);
+      }
+    } catch (error) {
+      console.error("Error fetching instruments:", error);
+    } finally {
+      setIsLoading(false); // Stop loading
+    }
+  };
+
+  fetchData();
+}, [bookingMade]);
+
+
+ 
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
       if (!user) {
@@ -245,38 +289,57 @@ const InstrumentList = () => {
   const handleBookingSubmit = async (bookingData) => {
     if (user && selectedInstrumentId) {
       try {
-        await bookInstrument(selectedInstrumentId, user.id, bookingData);
-        setBookingMade(!bookingMade);
+            await bookInstrument(selectedInstrumentId, user.id, bookingData);
+            setBookingMade(!bookingMade);
 
-        // After booking the instrument, mark it as waiting
-        await markInstrumentAsWaiting(selectedInstrumentId);
+            // After booking the instrument, mark it as waiting
+            await markInstrumentAsWaiting(selectedInstrumentId);
 
-        // Fetch the updated instrument data after booking
-        const updatedInstrument = await getInstrumentStatus(selectedInstrumentId);
-        // Update the filteredInstruments list
-        setFilteredInstruments((prevFilteredInstruments) =>
-          prevFilteredInstruments.map((instrument) =>
-            instrument._id === selectedInstrumentId
-              ? {
-                ...instrument,
-                availability: updatedInstrument.availability || null,
-                bookedBy: updatedInstrument.bookedBy || null,
-                bookedFrom: updatedInstrument.bookedFrom || null,
-                bookedUntil: updatedInstrument.bookedUntil || null,
-                location: updatedInstrument.location || null,
-                returning: updatedInstrument.returning || null,
-                waiting: updatedInstrument.waiting || null,
-                rejecting: updatedInstrument.rejecting || null,
-                releasing: updatedInstrument.releasing || null,
-                rejectingapproval: updatedInstrument.rejectingapproval || null,
-              }
-              : instrument
-          )
-        );
-      // After successfully booking the instrument, add it to the waitingToTake list
-      setWaitingToTake((prevWaiting) => [...prevWaiting, selectedInstrumentId]);
+            // Fetch the updated instrument data after booking
+            const updatedInstrument = await getInstrumentStatus(
+              selectedInstrumentId
+            );
 
-      } catch (error) {
+            // Update the filteredInstruments list
+            setFilteredInstruments((prevFilteredInstruments) =>
+              prevFilteredInstruments.map((instrument) =>
+                instrument._id === selectedInstrumentId
+                  ? {
+                      ...instrument,
+                      availability: updatedInstrument.availability || null,
+                      bookedBy: updatedInstrument.bookedBy || null,
+                      bookedFrom: updatedInstrument.bookedFrom || null,
+                      bookedUntil: updatedInstrument.bookedUntil || null,
+                      location: updatedInstrument.location || null,
+                      returning: updatedInstrument.returning || null,
+                      waiting: updatedInstrument.waiting || null,
+                      rejecting: updatedInstrument.rejecting || null,
+                      releasing: updatedInstrument.releasing || null,
+                      rejectingapproval:
+                        updatedInstrument.rejectingapproval || null,
+                    }
+                  : instrument
+              )
+            );
+
+            // After successfully booking the instrument, add it to the waitingToTake list
+            setWaitingToTake((prevWaiting) => [
+              ...prevWaiting,
+              selectedInstrumentId,
+            ]);
+
+            // Update instrumentStatuses state
+            setInstrumentStatuses((prevStatuses) => ({
+              ...prevStatuses,
+              [selectedInstrumentId]: "Booked",
+            }));
+
+        // Update cache
+        const cachedData = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || { statuses: {}, timestamp: Date.now() };
+        cachedData.statuses[selectedInstrumentId] = "Booked";
+        localStorage.setItem('instrumentStatusesCache', JSON.stringify(cachedData));
+
+        } catch (error) {
         console.log("Error during booking:", error);
       }
     } else {
@@ -318,8 +381,22 @@ const InstrumentList = () => {
           await markInstrumentAsReturning(id, true); // This will set returning to true
           await markInstrumentAsReleased(id, false); // This will set returning to false
           const updatedInstrument = await getInstrumentStatus(id);
+
+
           // Update local states
           updateInstrumentStates(updatedInstrument, id);
+
+         // Update instrumentStatuses state
+         setInstrumentStatuses(prevStatuses => ({
+          ...prevStatuses,
+          [id]: "Available"
+        }));  
+
+          // Update cache
+          const cachedData = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || { statuses: {}, timestamp: Date.now() };
+          cachedData.statuses[id] = "Available";
+          localStorage.setItem('instrumentStatusesCache', JSON.stringify(cachedData));
+
           // Remove from pending release
           setPendingReleaseInstruments(prev => prev.filter(instrId => instrId !== id));
           console.log("Instrument released successfully by super user!");
@@ -332,6 +409,7 @@ const InstrumentList = () => {
         setPendingReleaseInstruments(prev => [...prev, id]);
         console.log("Release pending admin approval. Instrument ID:", id);
         setIsLoading(false);
+        
         // Simulate adding to the returningInstruments array for UI purposes
         setReturningInstruments((prevReturning) => [...prevReturning, id]);
       }
