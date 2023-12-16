@@ -5,30 +5,32 @@ import { useNavigate } from "react-router-dom";
 // import "react-datepicker/dist/react-datepicker.css";
 import "./InstrumentList.css";
 
-const availableLocations = ["MAG.BETE (Bancone 4)", "MAG.BETE (Scaffale,Fila,Mensola) E_3_4", 
-"TERZO PIANO (Stanza 15)", "LOCALE VOLPE", "MAG.BETE (Scaffale,Fila,Mensola) I_3_0", "CASSETTIERA", "MAG.BETE (Scaffale,Fila,Mensola) I_2_1", "CASSETTIERA (NO BATTERIA)", 
-"LAB (PICAM)", "MAG.BETE (Scaffale,Fila,Mensola) I_0_0", "CLT (Scenario 7, Sara)", "LAB SW (Davide/Gabriele)", "MAG.BETE (Scaffale,Fila,Mensola) I_3_1", "CLT (Sceanario 7,Sara)", 
-"Alaska lab; Floor -1","Bancone (MAG.BETE) B3 (Bete)", "MAG.BETE (Scaffale,Fila,Mensola) I_2_0", "MAG.BETE (Scaffale,Fila,Mensola) D_1_3", "CLT (Rack 22)", "CLT (Scenario 8, Nick)", 
-"CLT (Lorenzo Scenario 4)", "MAG.BETE (Scaffale,Fila,Mensola) I_0_1", "CLT (Scenario 8, Nick )", "MAG.BETE (Scaffale,Fila,Mensola) D_0_1", "CLT (Rack 12)", 
-"CLT (Scenario 8, Nick )", "MAG.BETE (Scaffale,Mensola) M_0", "MAG.BETE (Scaffale,Mensola) L_0", "RAdio lab; Floor -1", "Bancone (MAG.BETE) B3", 
-"MAG.BETE (Scaffale,Fila,Mensola) D_2_3 (in uso su uno strumento)", "MAG.BETE (Scaffale,Fila,Mensola) D_0_1", "MAG.BETE (Scaffale,Fila,Mensola) I_1_1", 
-"MAG.BETE (Scaffale,Fila,Mensola) I_1_0", "LOCALE BOCCIONI", "CLT (Rack 129,169)", "CLT (Rack XX Nick)", "CLT (Rack XX,in ANRITSU 1230, Nick)", 
-"CLT (Scenario 4 in ANRITSU 1230,Lorenzo)", "BOCCIONI", "PVV lab; Floor -1", "MAG.BETE (Scaffale,Fila,Mensola) E_1_4", "MAG.BETE (Scaffale,Fila,Mensola) F_1_1", 
-"MAG.BETE (Scaffale,Fila,Mensola) D_3_3", "LAB (5 G)", "RAdio lab; Floor -1 (Rack 8510C)", "MAG.BETE (Scaffale,Fila,Mensola) E_4_4", "MAG.BETE (Scaffale,Mensola) L_1", 
-"MAG.BETE (Scaffale,Mensola) L_3", "MAG.BETE (Scaffale,Mensola) L_2", "MAG.BETE (Scaffale,Fila,Mensola) I_1_1", "GRUPPO 5G", "CLT", "MAG.BETE (Scaffale,Fila,Mensola) F_1_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) F_2_1", "MAG.BETE (Scaffale,Fila,Mensola) F_2_2", "MAG.BETE (Scaffale,Fila,Mensola) F_3_1", "MAG.BETE (Scaffale,Fila,Mensola) F_3_2",
-"MAG.BETE (Scaffale,Fila,Mensola) F_4_1", "MAG.BETE (Scaffale,Fila,Mensola) F_4_2", "MAG.BETE (Scaffale,Fila,Mensola) F_1_3", "MAG.BETE (Scaffale,Fila,Mensola) F_2_3", 
-"MAG.BETE (Scaffale,Fila,Mensola) D_1_2", "MAG.BETE (Scaffale,Fila,Mensola) D_1_1", "MAG.BETE (Scaffale,Fila,Mensola) D_2_1", "MAG.BETE (Scaffale,Fila,Mensola) D_2_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) D_3_1", "MAG.BETE (Scaffale,Fila,Mensola) D_3_2", "MAG.BETE (Scaffale,Fila,Mensola) D_4_1", "MAG.BETE (Scaffale,Fila,Mensola) D_4_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) C_1_1", "MAG.BETE (Scaffale,Fila,Mensola) C_1_2", "MAG.BETE (Scaffale,Fila,Mensola) C_2_1", "MAG.BETE (Scaffale,Fila,Mensola) C_2_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) C_3_1", "MAG.BETE (Scaffale,Fila,Mensola) C_3_2", "MAG.BETE (Scaffale,Fila,Mensola) C_4_2", "MAG.BETE (Scaffale,Fila,Mensola) F_1_2", 
-"CLT (Rack XX, In ANRITSU MD1230, Nick)", "MAG.BETE (Scaffale,Fila,Mensola) B_2_1", "MAG.BETE (Scaffale,Fila,Mensola) B_2_2", "MAG.BETE (Scaffale,Fila,Mensola) B_3_1", 
-"MAG.BETE (Scaffale,Fila,Mensola) B_3_2", "MAG.BETE (Scaffale,Fila,Mensola) G_1_1", "MAG.BETE (Scaffale,Fila,Mensola) G_2_1", "MAG.BETE (Scaffale,Fila,Mensola) G_2_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) G_3_1", "MAG.BETE (Scaffale,Fila,Mensola) G_3_2", "MAG.BETE (Scaffale,Fila,Mensola) G_4_1", "MAG.BETE (Scaffale,Fila,Mensola) G_4_2", 
-"MAG.BETE (Scaffale,Mensola) M_1", "MAG.BETE (Scaffale,Mensola) M_2", "MAG.BETE (Scaffale,Fila,Mensola) H_1_1", "PAVIMENTO MAG.BETE (Scaffale,Fila,Mensola) I_4_2", 
-"MAG.BETE (Scaffale,Fila,Mensola) E_2_4", "MAG.BETE (Scaffale,Fila,Mensola) G_2_1 (Borsa  B031663)", "Rack 19 (CLT)", "MAG.BETE (Scaffale,Fila,Mensola) F_3_3",
-"MAG.BETE (Scaffale,Fila,Mensola) D_2_3", "CLT (Lorenzo Scenario 8)", "CLT (Rack Giovanni)", "CLT (Rack Giovanni, into 34970)",
-"SW lab; Floor -1", "Sent to Ericsson", "CLT (Scenario 4 in Lorenzo)", "CLT (Rack Giovanni Bangara)"];
+// const availableLocations = ["MAG.BETE (Bancone 4)", "MAG.BETE (Scaffale,Fila,Mensola) E_3_4", 
+// "TERZO PIANO (Stanza 15)", "LOCALE VOLPE", "MAG.BETE (Scaffale,Fila,Mensola) I_3_0", "CASSETTIERA", "MAG.BETE (Scaffale,Fila,Mensola) I_2_1", "CASSETTIERA (NO BATTERIA)", 
+// "LAB (PICAM)", "MAG.BETE (Scaffale,Fila,Mensola) I_0_0", "CLT (Scenario 7, Sara)", "LAB SW (Davide/Gabriele)", "MAG.BETE (Scaffale,Fila,Mensola) I_3_1", "CLT (Sceanario 7,Sara)", 
+// "Alaska lab; Floor -1","Bancone (MAG.BETE) B3 (Bete)", "MAG.BETE (Scaffale,Fila,Mensola) I_2_0", "MAG.BETE (Scaffale,Fila,Mensola) D_1_3", "CLT (Rack 22)", "CLT (Scenario 8, Nick)", 
+// "CLT (Lorenzo Scenario 4)", "MAG.BETE (Scaffale,Fila,Mensola) I_0_1", "CLT (Scenario 8, Nick )", "MAG.BETE (Scaffale,Fila,Mensola) D_0_1", "CLT (Rack 12)", 
+// "CLT (Scenario 8, Nick )", "MAG.BETE (Scaffale,Mensola) M_0", "MAG.BETE (Scaffale,Mensola) L_0", "RAdio lab; Floor -1", "Bancone (MAG.BETE) B3", 
+// "MAG.BETE (Scaffale,Fila,Mensola) D_2_3 (in uso su uno strumento)", "MAG.BETE (Scaffale,Fila,Mensola) D_0_1", "MAG.BETE (Scaffale,Fila,Mensola) I_1_1", 
+// "MAG.BETE (Scaffale,Fila,Mensola) I_1_0", "LOCALE BOCCIONI", "CLT (Rack 129,169)", "CLT (Rack XX Nick)", "CLT (Rack XX,in ANRITSU 1230, Nick)", 
+// "CLT (Scenario 4 in ANRITSU 1230,Lorenzo)", "BOCCIONI", "PVV lab; Floor -1", "MAG.BETE (Scaffale,Fila,Mensola) E_1_4", "MAG.BETE (Scaffale,Fila,Mensola) F_1_1", 
+// "MAG.BETE (Scaffale,Fila,Mensola) D_3_3", "LAB (5 G)", "RAdio lab; Floor -1 (Rack 8510C)", "MAG.BETE (Scaffale,Fila,Mensola) E_4_4", "MAG.BETE (Scaffale,Mensola) L_1", 
+// "MAG.BETE (Scaffale,Mensola) L_3", "MAG.BETE (Scaffale,Mensola) L_2", "MAG.BETE (Scaffale,Fila,Mensola) I_1_1", "GRUPPO 5G", "CLT", "MAG.BETE (Scaffale,Fila,Mensola) F_1_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) F_2_1", "MAG.BETE (Scaffale,Fila,Mensola) F_2_2", "MAG.BETE (Scaffale,Fila,Mensola) F_3_1", "MAG.BETE (Scaffale,Fila,Mensola) F_3_2",
+// "MAG.BETE (Scaffale,Fila,Mensola) F_4_1", "MAG.BETE (Scaffale,Fila,Mensola) F_4_2", "MAG.BETE (Scaffale,Fila,Mensola) F_1_3", "MAG.BETE (Scaffale,Fila,Mensola) F_2_3", 
+// "MAG.BETE (Scaffale,Fila,Mensola) D_1_2", "MAG.BETE (Scaffale,Fila,Mensola) D_1_1", "MAG.BETE (Scaffale,Fila,Mensola) D_2_1", "MAG.BETE (Scaffale,Fila,Mensola) D_2_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) D_3_1", "MAG.BETE (Scaffale,Fila,Mensola) D_3_2", "MAG.BETE (Scaffale,Fila,Mensola) D_4_1", "MAG.BETE (Scaffale,Fila,Mensola) D_4_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) C_1_1", "MAG.BETE (Scaffale,Fila,Mensola) C_1_2", "MAG.BETE (Scaffale,Fila,Mensola) C_2_1", "MAG.BETE (Scaffale,Fila,Mensola) C_2_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) C_3_1", "MAG.BETE (Scaffale,Fila,Mensola) C_3_2", "MAG.BETE (Scaffale,Fila,Mensola) C_4_2", "MAG.BETE (Scaffale,Fila,Mensola) F_1_2", 
+// "CLT (Rack XX, In ANRITSU MD1230, Nick)", "MAG.BETE (Scaffale,Fila,Mensola) B_2_1", "MAG.BETE (Scaffale,Fila,Mensola) B_2_2", "MAG.BETE (Scaffale,Fila,Mensola) B_3_1", 
+// "MAG.BETE (Scaffale,Fila,Mensola) B_3_2", "MAG.BETE (Scaffale,Fila,Mensola) G_1_1", "MAG.BETE (Scaffale,Fila,Mensola) G_2_1", "MAG.BETE (Scaffale,Fila,Mensola) G_2_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) G_3_1", "MAG.BETE (Scaffale,Fila,Mensola) G_3_2", "MAG.BETE (Scaffale,Fila,Mensola) G_4_1", "MAG.BETE (Scaffale,Fila,Mensola) G_4_2", 
+// "MAG.BETE (Scaffale,Mensola) M_1", "MAG.BETE (Scaffale,Mensola) M_2", "MAG.BETE (Scaffale,Fila,Mensola) H_1_1", "PAVIMENTO MAG.BETE (Scaffale,Fila,Mensola) I_4_2", 
+// "MAG.BETE (Scaffale,Fila,Mensola) E_2_4", "MAG.BETE (Scaffale,Fila,Mensola) G_2_1 (Borsa  B031663)", "Rack 19 (CLT)", "MAG.BETE (Scaffale,Fila,Mensola) F_3_3",
+// "MAG.BETE (Scaffale,Fila,Mensola) D_2_3", "CLT (Lorenzo Scenario 8)", "CLT (Rack Giovanni)", "CLT (Rack Giovanni, into 34970)",
+// "SW lab; Floor -1", "Sent to Ericsson", "CLT (Scenario 4 in Lorenzo)", "CLT (Rack Giovanni Bangara)"];
+
+const availableLocations = [  "MAG.BETE", "LAB Ex Volpati", "LOCALE BOCCIONI", "LAB ALASKA", "LAB RADIO -1", "LAB CLT", "LAB PVV", "LAB SW", "LAB XHAUL"];
 
 // Define a function to check if a date string is valid
 function isValidDate(dateString) {

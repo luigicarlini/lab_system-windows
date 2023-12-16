@@ -4,16 +4,19 @@ import {
   bookInstrument,
   releaseInstrument,
   getInstrumentStatus,
-  markInstrumentAsReturning,     
-  markInstrumentAsWaiting,       
-  markInstrumentAsCancelBooking, 
-  markInstrumentAsRejected,      
-  markInstrumentAsReleased,      
-  markInstrumentRejectApproval
+  markInstrumentAsReturning,
+  markInstrumentAsWaiting,
+  markInstrumentAsCancelBooking,
+  markInstrumentAsRejected,
+  markInstrumentAsReleased,
+  markInstrumentRejectApproval,
+  markInstrumentAsWaitingBook
+  //setLocation
 } from "../api/api";
 
 import { useUserContext } from "../context/UserContext";
 import BookingModal from "./BookingModal";
+import LocationModal from './LocationModal'; // Adjust the path as necessary
 import "./InstrumentList.css";
 
 
@@ -43,7 +46,11 @@ const InstrumentList = () => {
   const [waitingToTake, setWaitingToTake] = useState([]);
   const [returningInstruments, setReturningInstruments] = useState([]);
   const [pendingReleaseInstruments, setPendingReleaseInstruments] = useState([]);
-
+  //control the visibility of the LocationModal and to store the location details entered by the super user.
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [currentInstrumentId, setCurrentInstrumentId] = useState(null);
+  const [modalContext, setModalContext] = useState(null); // 'waiting' or 'releasing'
+  //const [location, setLocationDetails] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,14 +93,14 @@ const InstrumentList = () => {
 
         if (bookedbySearchTerm) {
           const bookedbySearchTermLC = bookedbySearchTerm.toLowerCase();
-          filtered = filtered.filter((instrument) => 
-              instrument.bookedBy ?
+          filtered = filtered.filter((instrument) =>
+            instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
-                  instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
-                  instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
               false
           );
-      }
+        }
 
         // Update the filtered instruments
         setFilteredInstruments(sortInstruments(filtered));
@@ -114,7 +121,7 @@ const InstrumentList = () => {
     fetchData();
   }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, bookedByMode, user]);
 
-//Caching Mechanism:
+  // Caching Mechanism:
   // implement a caching mechanism that respects the existing state machine, we need to focus on caching the status of instruments without altering 
   // the flow of state transitions. The cache should be used primarily to speed up the initial loading of instrument statuses, while ensuring that any state changes 
   // due to user actions are reflected in real-time. To implement this: Use Cache for Initial Load: When the component mounts, use cached data to display instrument 
@@ -122,46 +129,46 @@ const InstrumentList = () => {
   // Update Cache on State Changes: Whenever an instrument's status changes due to user actions (booking, canceling, releasing, rejecting, etc.), 
   // update both the state and the cache to reflect these changes. Maintain Existing State Transitions: Ensure that all existing state transitions remain intact 
   // and function as expected.
-  
-useEffect(() => {
-  const fetchData = async () => {
-    setIsLoadingInstrument(true);
 
-    try {
-      const allInstruments = await getAllInstruments();
-      setInstruments(allInstruments);
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingInstrument(true);
 
-      // Retrieve cached statuses or initialize an empty object
-      const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
-      const statusMap = { ...cachedStatuses };
+      try {
+        const allInstruments = await getAllInstruments();
+        setInstruments(allInstruments);
 
-      // Fetch statuses for all instruments
-      const statuses = await Promise.all(
-        allInstruments.map((instrument) =>
-          getInstrumentStatus(instrument._id)
-        )
-      );
+        // Retrieve cached statuses or initialize an empty object
+        const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
+        const statusMap = { ...cachedStatuses };
 
-      allInstruments.forEach((instrument, index) => {
-        const currentStatus = statuses[index].availability ? "Available" : "Booked";
-        statusMap[instrument._id] = currentStatus;
-      });
+        // Fetch statuses for all instruments
+        const statuses = await Promise.all(
+          allInstruments.map((instrument) =>
+            getInstrumentStatus(instrument._id)
+          )
+        );
 
-      setInstrumentStatuses(statusMap);
+        allInstruments.forEach((instrument, index) => {
+          const currentStatus = statuses[index].availability ? "Available" : "Booked";
+          statusMap[instrument._id] = currentStatus;
+        });
 
-      // Update the cache with the latest statuses
-      localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
-      setIsLoadingInstrument(false);
-    } catch (error) {
-      console.error("Error fetching instruments:", error);
-      setIsLoadingInstrument(false);
-    }
-  };
+        setInstrumentStatuses(statusMap);
 
-  fetchData();
-}, [bookingMade]);
+        // Update the cache with the latest statuses
+        localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
+        setIsLoadingInstrument(false);
+      } catch (error) {
+        console.error("Error fetching instruments:", error);
+        setIsLoadingInstrument(false);
+      }
+    };
 
- 
+    fetchData();
+  }, [bookingMade]);
+
+
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
       if (!user) {
@@ -217,10 +224,10 @@ useEffect(() => {
       try {
         await bookInstrument(selectedInstrumentId, user.id, bookingData);
         setBookingMade(!bookingMade);
-        await markInstrumentAsWaiting(selectedInstrumentId);
+        await markInstrumentAsWaitingBook(selectedInstrumentId);
         const updatedInstrument = await getInstrumentStatus(selectedInstrumentId);
         updateInstrumentStates(updatedInstrument, selectedInstrumentId);
-        
+
         // Update the instrument status in the cache
         const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
         cachedStatuses[selectedInstrumentId] = "Booked";
@@ -232,38 +239,38 @@ useEffect(() => {
       console.log("You must be logged in to book an instrument.");
     }
   };
-  
+
 
   const handleReleaseInstrument = async (id) => {
     try {
       setIsLoading(true);
       const isSuperUser = user && user.username === "super user";
       const instrumentToRelease = instruments.find(instr => instr._id === id);
-  
+
       if (!instrumentToRelease) {
         console.error("Instrument not found:", id);
         return;
       }
-  
+
       const canRelease = (user && instrumentToRelease.bookedBy && (instrumentToRelease.bookedBy._id === user.id || instrumentToRelease.bookedBy === user.id)) || isSuperUser;
-  
+
       if (!canRelease) {
         console.log("You do not have permission to release this instrument.");
         return;
       }
-  
+
       if (isSuperUser) {
         await releaseInstrument(user.id, id);
         await markInstrumentAsReturning(id, true);
         await markInstrumentAsReleased(id, false);
         const updatedInstrument = await getInstrumentStatus(id);
         updateInstrumentStates(updatedInstrument, id);
-        
+
         // Update the instrument status in the cache
         const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
         cachedStatuses[id] = "Available";
         localStorage.setItem('instrumentStatusesCache', JSON.stringify(cachedStatuses));
-  
+
         setPendingReleaseInstruments(prev => prev.filter(instrId => instrId !== id));
         console.log("Instrument released successfully by super user!");
       } else {
@@ -277,7 +284,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
- 
+
 
   const updateInstrumentStates = (updatedInstrument, id) => {
     // Update instrumentStatuses
@@ -290,6 +297,30 @@ useEffect(() => {
     // Update the filtered view (instrumentsBookedByMe) if applicable
     if (bookedByMode) {
       setInstrumentsBookedByMe((prevInstruments) =>
+        prevInstruments.map((instrument) =>
+          instrument._id === id
+            ? {
+              ...instrument,
+              availability: updatedInstrument.availability || null,
+              bookedBy: updatedInstrument.bookedBy || null,
+              bookedFrom: updatedInstrument.bookedFrom || null,
+              bookedUntil: updatedInstrument.bookedUntil || null,
+              location: updatedInstrument.location || null,
+              location_inside_room: updatedInstrument.location_inside_room || null,
+              returning: updatedInstrument.returning || null,
+              waiting: updatedInstrument.waiting || null,
+              rejecting: updatedInstrument.rejecting || null,
+              releasing: updatedInstrument.releasing || null,
+              rejectingapproval: updatedInstrument.rejectingapproval || null,
+            }
+            : instrument
+        )
+      );
+    }
+  };
+
+  const updateInstrumentsState = (updatedInstrument, id) => {
+    setInstruments((prevInstruments) =>
       prevInstruments.map((instrument) =>
         instrument._id === id
           ? {
@@ -299,8 +330,9 @@ useEffect(() => {
             bookedFrom: updatedInstrument.bookedFrom || null,
             bookedUntil: updatedInstrument.bookedUntil || null,
             location: updatedInstrument.location || null,
+            location_inside_room: updatedInstrument.location_inside_room || null,
             returning: updatedInstrument.returning || null,
-            waiting: updatedInstrument.waiting || null,    
+            waiting: updatedInstrument.waiting || null,
             rejecting: updatedInstrument.rejecting || null,
             releasing: updatedInstrument.releasing || null,
             rejectingapproval: updatedInstrument.rejectingapproval || null,
@@ -308,46 +340,24 @@ useEffect(() => {
           : instrument
       )
     );
-    }
-  };
-  
-  const updateInstrumentsState = (updatedInstrument, id) => {
-    setInstruments((prevInstruments) =>
-    prevInstruments.map((instrument) =>
-      instrument._id === id
-        ? {
-          ...instrument,
-          availability: updatedInstrument.availability || null,
-          bookedBy: updatedInstrument.bookedBy || null,
-          bookedFrom: updatedInstrument.bookedFrom || null,
-          bookedUntil: updatedInstrument.bookedUntil || null,
-          location: updatedInstrument.location || null,
-          returning: updatedInstrument.returning || null,
-          waiting: updatedInstrument.waiting || null,
-          rejecting: updatedInstrument.rejecting || null,
-          releasing: updatedInstrument.releasing || null,
-          rejectingapproval: updatedInstrument.rejectingapproval || null,
-        }
-        : instrument
-      )
-    );
     setFilteredInstruments((prevFilteredInstruments) =>
-          prevFilteredInstruments.map((instrument) =>
-            instrument._id === id
-              ? {
-                ...instrument,
-                availability: updatedInstrument.availability || null,
-                bookedBy: updatedInstrument.bookedBy || null,
-                bookedFrom: updatedInstrument.bookedFrom || null,
-                bookedUntil: updatedInstrument.bookedUntil || null,
-                location: updatedInstrument.location || null,
-                returning: updatedInstrument.returning || null,
-                waiting: updatedInstrument.waiting || null,  
-                rejecting: updatedInstrument.rejecting || null,
-                releasing: updatedInstrument.releasing || null,
-                rejectingapproval: updatedInstrument.rejectingapproval || null,
-              }
-              : instrument
+      prevFilteredInstruments.map((instrument) =>
+        instrument._id === id
+          ? {
+            ...instrument,
+            availability: updatedInstrument.availability || null,
+            bookedBy: updatedInstrument.bookedBy || null,
+            bookedFrom: updatedInstrument.bookedFrom || null,
+            bookedUntil: updatedInstrument.bookedUntil || null,
+            location: updatedInstrument.location || null,
+            location_inside_room: updatedInstrument.location_inside_room || null,
+            returning: updatedInstrument.returning || null,
+            waiting: updatedInstrument.waiting || null,
+            rejecting: updatedInstrument.rejecting || null,
+            releasing: updatedInstrument.releasing || null,
+            rejectingapproval: updatedInstrument.rejectingapproval || null,
+          }
+          : instrument
       )
     );
   };
@@ -359,7 +369,7 @@ useEffect(() => {
       await markInstrumentAsCancelBooking(id, false, false);
       const updatedInstrument = await getInstrumentStatus(id);
       updateInstrumentStates(updatedInstrument, id);
-      
+
       // Update the instrument status in the cache
       const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
       cachedStatuses[id] = "Available";
@@ -370,7 +380,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
-  
+
   const handleRejectInstrument = async (id) => {
     try {
       setIsLoadingReject(true);
@@ -379,7 +389,7 @@ useEffect(() => {
       await markInstrumentRejectApproval(id, true);
       const updatedInstrument = await getInstrumentStatus(id);
       updateInstrumentStates(updatedInstrument, id);
-      
+
       // Update the instrument status in the cache
       const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
       cachedStatuses[id] = updatedInstrument.availability ? "Available" : "Booked";
@@ -462,113 +472,121 @@ useEffect(() => {
     }
   };
 
-// When clicking the "Waiting for the instrument" button
-const handleWaitingClick = async (id) => {
-  // Check if the current user is the super user
-  if (user && user.username === "super user") {
-    // Optimistically update the UI to reflect that the instrument is no longer waiting
-    setFilteredInstruments((prevInstruments) =>
-      prevInstruments.map((instrument) =>
-        instrument._id === id ? { ...instrument, waiting: false } : instrument
-      )
-    );
-
-    try {
-      // This will attempt to set waiting to false in the backend
-      await markInstrumentAsWaiting(id, false);
-    } catch (error) {
-      console.error("Error while updating waiting status:", error);
-      // Revert the optimistic update if the API call fails
-      setFilteredInstruments((prevInstruments) =>
-        prevInstruments.map((instrument) =>
-          instrument._id === id ? { ...instrument, waiting: true } : instrument
-        )
-      );
-      // Update the local state to remove the instrument from the waitingToTake list
-      setWaitingToTake((prevWaiting) => prevWaiting.filter((instrId) => instrId !== id));
+  const handleWaitingClick = async (id) => {
+    if (user && user.username === "super user") {
+      setCurrentInstrumentId(id);
+      setModalContext('waiting');
+      setIsLocationModalOpen(true);
+    } else {
+      console.log("Only the super user can perform this action.");
     }
-  } else {
-    console.log("Only the super user can perform this action.");
-  }
-};
+  };
 
-// When clicking the "Returning the instrument" button
-const handleReturningClick = async (id) => {
-  // Check if the current user is the super user
-  if (user && user.username === "super user") {
-    // Optimistically update the UI to reflect that the instrument is no longer returning
-    setFilteredInstruments((prevInstruments) =>
-      prevInstruments.map((instrument) =>
-        instrument._id === id ? { ...instrument, returning: false } : instrument
-      )
-    );
-
-    try {
-      // This will attempt to set returning to false in the backend
-      await markInstrumentAsReturning(id, false);
-    } catch (error) {
-      console.error("Error while updating returning status:", error);
-      // Revert the optimistic update if the API call fails
-      setFilteredInstruments((prevInstruments) =>
-        prevInstruments.map((instrument) =>
-          instrument._id === id ? { ...instrument, returning: true } : instrument
-        )
-      );
-      // Update the local state to remove the instrument from the waitingToTake list
-      setReturningInstruments((prevReturning) => prevReturning.filter((instrId) => instrId !== id));
+  const handleReleasingClick = async (id) => {
+    if (user && user.username === "super user") {
+      setCurrentInstrumentId(id);
+      setModalContext('releasing');
+      setIsLocationModalOpen(true);
+    } else {
+      console.log("Only the super user can perform this action.");
     }
-  } else {
-    console.log("Only the super user can perform this action.");
-  }
-};
+  };
 
-// When clicking the "Returning the instrument" button
-const handleReleasingClick = async (id) => {
-  // Check if the current user is the super user
-  if (user && user.username === "super user") {
-    // Optimistically update the UI to reflect that the instrument is no longer returning
-    setFilteredInstruments((prevInstruments) =>
-      prevInstruments.map((instrument) =>
-        instrument._id === id ? { ...instrument, releasing: false } : instrument
-      )
-    );
+  const handleReturningClick = async (id) => {
+    if (user && user.username === "super user") {
+      setCurrentInstrumentId(id);
+      setModalContext('returning');
+      setIsLocationModalOpen(true);
+    } else {
+      console.log("Only the super user can perform this action.");
+    }
+  };
 
+  //Handle Location Submission:
+  //handleLocationSubmit is a function to handle the submission of location details from the LocationModal. 
+  //This function should perform the necessary actions (such as updating the instrument's location) after the super user submits the location details.
+  const handleLocationSubmit = async ({ location, locationRoom }) => {
     try {
-      setIsLoading(true);
-      setTimeout(async () => {
-      // Release the instrument
-      await markInstrumentAsReleased(id, false); // This will set releasing to false
-      await releaseInstrument(user.id, id);
-        // Fetch the updated instrument data
-        const updatedInstrument = await getInstrumentStatus(id);
+      if (modalContext === 'waiting') {
+        // Logic from handleWaitingClick
+        setFilteredInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === currentInstrumentId ? { ...instrument, waiting: false } : instrument
+          )
+        );
+        console.log(`(Waiting) : Submitting location for instrument ID: ${currentInstrumentId}`);
+        console.log("markInstrumentAsWaiting with location:", location.location);
 
-        // Update instrumentStatuses
-        setInstrumentStatuses((prevStatuses) => ({
-          ...prevStatuses,
-          [id]: updatedInstrument.availability ? "Available" : "Booked",
-        }));
-
-        // Update instrument details, including bookedBy, bookedFrom, and bookedUntil
-        updateInstrumentStates(updatedInstrument, id);
-
-        console.log("Instrument released successfully!");
+        await markInstrumentAsWaiting(currentInstrumentId, false, location, locationRoom);
+        const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
+        updateInstrumentStates(updatedInstrument, currentInstrumentId);
+        // Additional logic for handling 'waiting' context
+        // For example, updating the instrument's location with locationDetails
+      } else if (modalContext === 'releasing') {
+        // Logic from handleReleasingClick
+        setIsLoading(true);
+        console.log(`(Releasing) : Submitting location for instrument ID: ${currentInstrumentId}`);
+        await releaseInstrument(user.id, currentInstrumentId);
+        await markInstrumentAsReleased(currentInstrumentId, false, location, locationRoom);
+        const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
+        updateInstrumentStates(updatedInstrument, currentInstrumentId);
+        setPendingReleaseInstruments((prevReleasing) => prevReleasing.filter((instrId) => instrId !== currentInstrumentId));
         setIsLoading(false);
-      }, 1000);
+        // Additional logic for handling 'releasing' context
+        // For example, updating the instrument's location with locationDetails
+        console.log("handleLocationSubmit ('releasing'): Calling setLocation...");
+      } else if (modalContext === 'returning') {
+        // Optimistically update the UI to reflect that the instrument is no longer returning
+        setFilteredInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === currentInstrumentId ? { ...instrument, returning: false } : instrument
+          )
+        );
+        console.log(`(Returning) : Submitting location for instrument ID: ${currentInstrumentId}`);
+        //await markInstrumentAsReturning(currentInstrumentId, false, location.location, location.locationRoom);
+        await markInstrumentAsReturning(currentInstrumentId, false, location, locationRoom);
+        const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
+        updateInstrumentStates(updatedInstrument, currentInstrumentId);
+        console.log("Instrument released successfully!");
+      }
+      // Common logic after handling specific context
+      // For example, updating the instrument's location, closing the modal, etc.
     } catch (error) {
-      console.error("Error while updating releasing status:", error);
+      console.error("Error in handleLocationSubmit:", error);
       // Revert the optimistic update if the API call fails
-      setFilteredInstruments((prevInstruments) =>
-        prevInstruments.map((instrument) =>
-          instrument._id === id ? { ...instrument, releasing: true } : instrument
-        )
-      );
-      // Update the local state to remove the instrument from the waitingToTake list
-      setPendingReleaseInstruments((prevReleasing) => prevReleasing.filter((instrId) => instrId !== id));
+      if (modalContext === 'waiting') {
+        setFilteredInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === currentInstrumentId ? { ...instrument, waiting: true } : instrument
+          )
+        );
+      } else if (modalContext === 'releasing') {
+        setFilteredInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === currentInstrumentId ? { ...instrument, releasing: true } : instrument
+          )
+        );
+      } else if (modalContext === 'returning') {
+        setFilteredInstruments((prevInstruments) =>
+          prevInstruments.map((instrument) =>
+            instrument._id === currentInstrumentId ? { ...instrument, returning: true } : instrument
+          )
+        );
+      }
+    } finally {
+      // Reset the context and close the modal
+      setModalContext(null);
+      setIsLocationModalOpen(false);
     }
-  } else {
-    console.log("Only the super user can perform this action.");
-  }
-};
+  };
+
+  // Define this function in InstrumentList.js
+  const handleModalClose = () => {
+    setIsLocationModalOpen(false);
+    // Reset any other state or context as needed
+    // For example: setModalContext(null);
+    setModalContext(null);
+  };
 
   // When clicking the "Rejecting the instrument" button
   const handleRejectingUserClick = async (id) => {
@@ -640,7 +658,7 @@ const handleReleasingClick = async (id) => {
           }}
         >
 
-        {instrument.description}
+          {instrument.description}
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Equipment:{" "}
@@ -702,7 +720,7 @@ const handleReleasingClick = async (id) => {
         {expandedInstrumentId === instrument._id && (
           <div>
             {/* All the additional details to be shown when expanded */}
-            <div>
+            {/* <div>
               <span style={{ fontWeight: "bold" }}>Waiting: </span>
               {instrument.waiting ? "Yes" : "No"}
             </div>
@@ -721,7 +739,7 @@ const handleReleasingClick = async (id) => {
             <div>
               <span style={{ fontWeight: "bold" }}>RejectingApproval: </span>
               {instrument.rejectingapproval ? "Yes" : "No"}
-            </div>            
+            </div>             */}
             <div>
               <span style={{ fontWeight: "bold" }}>producer: </span>
               {instrument.producer}
@@ -745,14 +763,6 @@ const handleReleasingClick = async (id) => {
             <div>
               <span style={{ fontWeight: "bold" }}>location: </span>
               {instrument.location}
-            </div>
-            <div>
-              <span style={{ fontWeight: "bold" }}>room_site_number: </span>
-              {instrument.room_site_number}
-            </div>
-            <div>
-              <span style={{ fontWeight: "bold" }}>room_site_description: </span>
-              {instrument.room_site_description}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>location_inside_room: </span>
@@ -797,10 +807,10 @@ const handleReleasingClick = async (id) => {
           </div>
         )}
 
-         {/* Book Button */}
+        {/* Book Button */}
         {/* {instrumentStatuses[instrument._id] === "Available" && !waitingToTake.includes(instrument._id) && !returningInstruments.includes(instrument._id) &&  */}
         {!instrument.returning && !instrument.waiting && instrumentStatuses[instrument._id] === "Available" && (
-        // !instrument.returning &&(
+          // !instrument.returning &&(
           <button
             onClick={() => handleBookInstrument(instrument._id)}
             className="book-button"
@@ -814,38 +824,6 @@ const handleReleasingClick = async (id) => {
             You must be logged in to book this instrument.
           </div>
         )}
-
-        {/* Release Button*/}
-        {/* {instrumentStatuses[instrument._id] === "Booked" &&
-          instrument.bookedBy &&
-          user &&
-          (instrument.bookedBy._id === user.id ||
-            instrument.bookedBy === user.id || user.username === "super user") && !instrument.rejecting && !instrument.waiting && (
-            <div>
-              {isLoading && (
-                <div className="loading-container">
-                  <div className="spinner"></div>
-                  <span className="loading-text">Releasing...</span>
-                </div>
-              )}
-              <button
-                onClick={() => handleReleaseInstrument(instrument._id)}
-                style={{
-                  marginTop: "10px",
-                  // backgroundColor: "#808080", // Choose a color that denotes a release action
-                  backgroundColor: "#FF0000", // Changed to red
-                  color: "white",
-                  border: "none",
-                  padding: "5px 10px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  //width: "100%",
-                }}
-              >
-                Release
-              </button>
-            </div>
-          )} */}
 
         {/* Release Button */}
         {instrumentStatuses[instrument._id] === "Booked" &&
@@ -937,19 +915,6 @@ const handleReleasingClick = async (id) => {
             Not yet bookable: Waiting for the admin retrieval...
           </button>
         )}
-
-
-        {/* Rejecting the instrument Button Admin side*/}
-        {/* {
-          (user && user.username === "super user") && instrument.rejecting && !instrument.rejectingapproval && (
-            <button
-              onClick={() => handleRejectingAdminClick(instrument._id)}
-              className="rejecting-button"
-            >
-              !! The Admin has rejected this booking !!...please click to notify to the users
-            </button>
-          )
-        } */}
 
         {/* Rejecting the instrument Button users side*/}
         {
@@ -1043,7 +1008,7 @@ const handleReleasingClick = async (id) => {
             Loading instruments...
           </div>
         )}
-        
+
         {/* Render instrument details only when not loading */}
         {/* List of all instruments */}
         {!isLoadingInstrument && filteredInstruments
@@ -1057,11 +1022,11 @@ const handleReleasingClick = async (id) => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesBookedby = instrument.bookedBy ? 
-            (typeof instrument.bookedBy === "object" ? 
+            const matchesBookedby = instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
                 instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
-            false;          
+              false;
             // Combine all filter conditions using logical OR (||)
             return (
               matchesDescription ||
@@ -1079,7 +1044,7 @@ const handleReleasingClick = async (id) => {
   };
 
 
-  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments}) => {
+  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
     return (
       <div>
         <button
@@ -1106,11 +1071,11 @@ const handleReleasingClick = async (id) => {
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesBookedby = instrument.bookedBy ? 
-            (typeof instrument.bookedBy === "object" ? 
+            const matchesBookedby = instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
                 instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
-            false;  
+              false;
 
             return (
               matchesDescription ||
@@ -1153,11 +1118,11 @@ const handleReleasingClick = async (id) => {
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesBookedby = instrument.bookedBy ? 
-            (typeof instrument.bookedBy === "object" ? 
+            const matchesBookedby = instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
                 instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
-            false;  
+              false;
             return (
               matchesDescription ||
               matchesEquipment ||
@@ -1255,6 +1220,12 @@ const handleReleasingClick = async (id) => {
         onRequestClose={() => setIsModalOpen(false)}
         onSubmitBooking={handleBookingSubmit}
         setIsModalOpen={setIsModalOpen}
+      />
+      <LocationModal
+        isOpen={isLocationModalOpen}
+        onRequestClose={handleModalClose}
+        onSubmitLocation={handleLocationSubmit}
+        currentInstrumentId={currentInstrumentId}
       />
     </div>
   );

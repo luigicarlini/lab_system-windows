@@ -146,9 +146,7 @@ router.post('/release/:id', async (req, res) => {
         instrument.waiting = false;
         instrument.rejecting = false;
         await instrument.save();
-        res
-          .status(200)
-          .json({ message: "Instrument released successfully", instrument });
+        res.status(200).json({ message: "Instrument released successfully", instrument });
       } else {
         res.status(400).json({ message: "Instrument is already released" });
       }
@@ -170,8 +168,17 @@ router.post('/returning/:id', async (req, res) => {
     // Toggle the 'returning' status based on the request body
     // If 'returning' is not provided in the request, default to true
     console.log("backend instrument.returning:", req.body.returning);
+    console.log("backend instrument.location_inside_room:", req.body.location);
+    console.log("backend instrument.location:", req.body.locationRoom);
+
     instrument.returning = req.body.returning; // This should be set according to what was passed in the request body
+    instrument.location_inside_room = req.body.location;    
+    instrument.location = req.body.locationRoom;
     console.log("backend instrument.returning:", instrument.returning);
+    console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
+    console.log("backend instrument.location:", instrument.location);
+
+
     //instrument.waiting = false;
     //instrument.waiting = instrument.returning === true ? false : true;
     console.log("backend instrument.waiting:", instrument.waiting);
@@ -184,6 +191,43 @@ router.post('/returning/:id', async (req, res) => {
 
 // Route for a user to toggle the "waiting" status for an instrument
 router.post('/waiting/:id', async (req, res) => {
+  try {
+    const instrument = await Instrument.findById(req.params.id);
+    if (!instrument) {
+        return res.status(404).json({ message: "Instrument not found" });
+    }
+    // Toggle the 'waiting' status based on the request body
+    // If 'waiting' is not provided in the request, default to true
+    console.log("backend instrument.returning:", req.body.returning);
+    console.log("backend instrument.location_inside_room:", req.body.locationRoom);
+    console.log("backend instrument.location:", req.body.location);
+
+    instrument.waiting = req.body.waiting;
+    instrument.location_inside_room = req.body.location;    
+    instrument.location = req.body.locationRoom;
+    //instrument.waiting = req.body.waiting !== undefined ? req.body.waiting : true;
+    console.log("backend instrument.waiting:", instrument.waiting);
+    console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
+    console.log("backend instrument.location:", instrument.location);
+
+
+    instrument.returning = false;
+    instrument.releasing = false;
+    instrument.rejecting = false;
+    instrument.rejectingapproval = false;
+    //instrument.location = req.body.location;
+    //instrument.returning = instrument.waiting === true ? false : true;
+    console.log("backend instrument.returning:", instrument.returning);
+    console.log("backend instrument.waiting:", instrument.waiting);
+    await instrument.save();
+    res.status(200).json({ message: `User marked as ${instrument.waiting ? 'waiting for' : 'not waiting for'} instrument`, instrument });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route for a user to toggle the "waiting" status for an instrument
+router.post('/waitingbook/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
@@ -208,7 +252,7 @@ router.post('/waiting/:id', async (req, res) => {
   }
 });
 
-// Route for a user to toggle the "waiting" status for an instrument
+// Route for a user to toggle the "releasing" status for an instrument
 router.post('/releasing/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
@@ -216,9 +260,18 @@ router.post('/releasing/:id', async (req, res) => {
         return res.status(404).json({ message: "Instrument not found" });
     }
     // If 'releasing' is not provided in the request, default to false
-    console.log("backend instrument.releasing:", req.body.releasing);
+    console.log("backend instrument.returning:", req.body.returning);
+    console.log("backend instrument.location_inside_room:", req.body.locationRoom);
+    console.log("backend instrument.location:", req.body.location);
+
+
     instrument.releasing = req.body.releasing;
+    instrument.location_inside_room = req.body.location;    
+    instrument.location = req.body.locationRoom;
     console.log("backend instrument.releasing:", instrument.releasing);
+    console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
+    console.log("backend instrument.location:", instrument.location);
+
     await instrument.save();
     res.status(200).json({ message: `User marked as ${instrument.releasing ? 'releasing for' : 'not releasing for'} instrument`, instrument });
   } catch (err) {
@@ -236,7 +289,7 @@ router.post('/cancel/:id', async (req, res) => {
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
     console.log("backend instrument.waiting:", req.body.waiting);
-    console.log("backend instrument.waiting:", req.body.returning);
+    console.log("backend instrument.returning:", req.body.returning);
     instrument.waiting = req.body.waiting;
     instrument.returning = req.body.returning;
     instrument.originalLocation = null;
