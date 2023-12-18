@@ -1,3 +1,42 @@
+// outline the key states and transitions to  visualize the state machine:
+// Initial State (Available/Not Booked)
+// Instruments start in this state.
+
+// --------------  Booking Requested -------------------//
+// Trigger: User requests to book an instrument.
+// Transition: From "Available" to "Booking Requested".
+//--------------------------------------------------------
+
+//--------------Waiting for Admin Approval--------------//
+// Trigger: Booking request is pending admin approval.
+// Transition: From "Booking Requested" to "Waiting for Admin Approval".
+//--------------------------------------------------------
+
+//--------------Booked----------------------------------//
+// Trigger: Admin approves the booking request.
+// Transition: From "Waiting for Admin Approval" to "Booked".
+//--------------------------------------------------------
+
+//--------------Release Requested-----------------------//
+// Trigger: User requests to release the instrument.
+// Transition: From "Booked" to "Release Requested".
+//--------------------------------------------------------
+
+//--------------Waiting for Admin to Confirm Release----//
+// Trigger: Release request is pending admin approval.
+// Transition: From "Release Requested" to "Waiting for Admin to Confirm Release".
+//--------------------------------------------------------
+
+//--------------Available/Not Booked (Again)------------//
+// Trigger: Admin approves the release request.
+// Transition: From "Waiting for Admin to Confirm Release" back to "Available/Not Booked".
+//--------------------------------------------------------
+
+//--------------Booking Rejected-----------------------//
+// Trigger: Admin rejects the booking request.
+// Transition: From "Waiting for Admin Approval" to "Available/Not Booked".
+//--------------------------------------------------------
+
 import React, { useEffect, useState } from "react";
 import {
   getAllInstruments,
@@ -11,7 +50,6 @@ import {
   markInstrumentAsReleased,
   markInstrumentRejectApproval,
   markInstrumentAsWaitingBook
-  //setLocation
 } from "../api/api";
 
 import { useUserContext } from "../context/UserContext";
@@ -49,7 +87,7 @@ const InstrumentList = () => {
   //control the visibility of the LocationModal and to store the location details entered by the super user.
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [currentInstrumentId, setCurrentInstrumentId] = useState(null);
-  const [modalContext, setModalContext] = useState(null); // 'waiting' or 'releasing'
+  const [modalContext, setModalContext] = useState(null); // 'waiting' , 'releasing' or 'returning'
   //const [location, setLocationDetails] = useState(null);
 
   useEffect(() => {
@@ -658,7 +696,13 @@ const InstrumentList = () => {
           }}
         >
 
-          {instrument.description}
+        {instrument.description}
+        </div>
+        <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+          Type:{" "}
+          <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+            {instrument.type}
+          </span>
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Equipment:{" "}

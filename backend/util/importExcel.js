@@ -23,6 +23,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/instrumentDB', {
 // Define Mongoose schema and model
 const InstrumentSchema = new mongoose.Schema({
   censimento: { type: String, required: false },
+  type: { type: String, required: false },
   description: { type: String, required: false },
   producer: { type: String, required: false },  
   model: { type: String, required: false },
@@ -90,6 +91,7 @@ const saveData = async () => {
         const dueCalibration = excelDateToString(item['Calibration Due Date']);
         const instrument = new Instrument({
           censimento: item["NUMERO PROGRESSIVO CENSIMENTO"],
+          type: item["Type"],
           description: item["Short Description"],
           producer: item["Equipment Producer"],
           model: item["Model"],

@@ -6,6 +6,10 @@ const instrumentSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  type: { //instrumentType
+    type: String,
+    required: false
+  },
   description: { //instrumentName
     type: String,
     required: false
