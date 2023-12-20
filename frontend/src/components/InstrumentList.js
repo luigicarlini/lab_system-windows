@@ -189,10 +189,16 @@ const InstrumentList = () => {
   //           getInstrumentStatus(instrument._id)
   //         )
   //       );
+		
+		
 
   //       allInstruments.forEach((instrument, index) => {
-  //         const currentStatus = statuses[index].availability ? "Available" : "Booked";
-  //         statusMap[instrument._id] = currentStatus;
+  //         const currentStatus = statuses[index].availability //? "Available" : "Booked";
+	// 	  if (currentStatus === "Available" || currentStatus === "Booked"){
+	// 	    statusMap[instrument._id] = currentStatus;
+	// 	  } else if (!statusMap[instrument._id] || statusMap[instrument._id] === "Unknown"){
+  //         statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";			  
+	// 	  }
   //       });
 
   //       setInstrumentStatuses(statusMap);
@@ -219,15 +225,26 @@ const InstrumentList = () => {
   
         // Retrieve cached statuses or initialize an empty object
         const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
-        const statusMap = { ...cachedStatuses };
+        let statusMap = { ...cachedStatuses };
   
-        // Fetch statuses only for instruments not in the cache or with "Unknown" status
-        await Promise.all(allInstruments.map(async (instrument) => {
-          if (!statusMap[instrument._id] || statusMap[instrument._id] === "Unknown") {
-            const updatedStatus = await getInstrumentStatus(instrument._id);
-            statusMap[instrument._id] = updatedStatus.availability ? "Available" : "Booked";
-          }
-        }));
+        // Identify instruments with "Unknown" status or not in the cache
+        const instrumentsToUpdate = allInstruments.filter(instrument =>
+          !statusMap[instrument._id] || statusMap[instrument._id] === "Unknown"
+        );
+  
+        // Fetch statuses only for instruments needing an update
+        if (instrumentsToUpdate.length > 0) {
+          const updatedStatuses = await Promise.all(
+            instrumentsToUpdate.map(instrument =>
+              getInstrumentStatus(instrument._id)
+            )
+          );
+  
+          updatedStatuses.forEach((status, index) => {
+            const currentStatus = status.availability ? "Available" : "Booked";
+            statusMap[instrumentsToUpdate[index]._id] = currentStatus;
+          });
+        }
   
         setInstrumentStatuses(statusMap);
   
@@ -243,7 +260,6 @@ const InstrumentList = () => {
     fetchData();
   }, [bookingMade]);
   
-
 
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
@@ -337,8 +353,8 @@ const InstrumentList = () => {
 
       if (isSuperUser) {
         await releaseInstrument(user.id, id);
-        await markInstrumentAsReturning(id, true);
-        await markInstrumentAsReleased(id, false);
+        await markInstrumentAsReturning(id, true, instrumentToRelease.location, instrumentToRelease.location_inside_room);
+        await markInstrumentAsReleased(id, false, instrumentToRelease.location, instrumentToRelease.location_inside_room);
         const updatedInstrument = await getInstrumentStatus(id);
         updateInstrumentStates(updatedInstrument, id);
 
@@ -350,7 +366,7 @@ const InstrumentList = () => {
         setPendingReleaseInstruments(prev => prev.filter(instrId => instrId !== id));
         console.log("Instrument released successfully by super user!");
       } else {
-        await markInstrumentAsReleased(id, true);
+        await markInstrumentAsReleased(id, true, instrumentToRelease.location, instrumentToRelease.location_inside_room);
         setPendingReleaseInstruments(prev => [...prev, id]);
         console.log("Release pending admin approval. Instrument ID:", id);
       }
