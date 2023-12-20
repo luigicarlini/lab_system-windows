@@ -7,7 +7,7 @@ set DB_NAME=instrumentDB
 set BACKUP_PATH=C:\MongoDB_Backup
 
 REM Set the number of days for backup retention
-set RETENTION_DAYS=7
+set RETENTION_DAYS=30
 
 REM Create a backup
 echo Creating backup...

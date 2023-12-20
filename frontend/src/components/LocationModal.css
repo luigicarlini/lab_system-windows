@@ -10,7 +10,8 @@
     font-size: 1.4em;
     color: #333;
     margin-bottom: 20px;
-  }
+    margin-top: 80px; /* Adjust this value as needed */
+}
   
   .location-input {
     width: 100%;

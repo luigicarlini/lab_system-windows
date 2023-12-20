@@ -53,6 +53,7 @@ import {
 } from "../api/api";
 
 import { useUserContext } from "../context/UserContext";
+//import { useLocation } from 'react-router-dom';
 import BookingModal from "./BookingModal";
 import LocationModal from './LocationModal'; // Adjust the path as necessary
 import "./InstrumentList.css";
@@ -89,6 +90,8 @@ const InstrumentList = () => {
   const [currentInstrumentId, setCurrentInstrumentId] = useState(null);
   const [modalContext, setModalContext] = useState(null); // 'waiting' , 'releasing' or 'returning'
   //const [location, setLocationDetails] = useState(null);
+  //const location = useLocation();
+  //console.log("Current Path:", location.pathname);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,43 +171,78 @@ const InstrumentList = () => {
   // update both the state and the cache to reflect these changes. Maintain Existing State Transitions: Ensure that all existing state transitions remain intact 
   // and function as expected.
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoadingInstrument(true);
+
+  //     try {
+  //       const allInstruments = await getAllInstruments();
+  //       setInstruments(allInstruments);
+
+  //       // Retrieve cached statuses or initialize an empty object
+  //       const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
+  //       const statusMap = { ...cachedStatuses };
+
+  //       // Fetch statuses for all instruments
+  //       const statuses = await Promise.all(
+  //         allInstruments.map((instrument) =>
+  //           getInstrumentStatus(instrument._id)
+  //         )
+  //       );
+
+  //       allInstruments.forEach((instrument, index) => {
+  //         const currentStatus = statuses[index].availability ? "Available" : "Booked";
+  //         statusMap[instrument._id] = currentStatus;
+  //       });
+
+  //       setInstrumentStatuses(statusMap);
+
+  //       // Update the cache with the latest statuses
+  //       localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
+  //       setIsLoadingInstrument(false);
+  //     } catch (error) {
+  //       console.error("Error fetching instruments:", error);
+  //       setIsLoadingInstrument(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [bookingMade]);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingInstrument(true);
-
+  
       try {
         const allInstruments = await getAllInstruments();
         setInstruments(allInstruments);
-
+  
         // Retrieve cached statuses or initialize an empty object
         const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
         const statusMap = { ...cachedStatuses };
-
-        // Fetch statuses for all instruments
-        const statuses = await Promise.all(
-          allInstruments.map((instrument) =>
-            getInstrumentStatus(instrument._id)
-          )
-        );
-
-        allInstruments.forEach((instrument, index) => {
-          const currentStatus = statuses[index].availability ? "Available" : "Booked";
-          statusMap[instrument._id] = currentStatus;
-        });
-
+  
+        // Fetch statuses only for instruments not in the cache or with "Unknown" status
+        await Promise.all(allInstruments.map(async (instrument) => {
+          if (!statusMap[instrument._id] || statusMap[instrument._id] === "Unknown") {
+            const updatedStatus = await getInstrumentStatus(instrument._id);
+            statusMap[instrument._id] = updatedStatus.availability ? "Available" : "Booked";
+          }
+        }));
+  
         setInstrumentStatuses(statusMap);
-
+  
         // Update the cache with the latest statuses
         localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
-        setIsLoadingInstrument(false);
       } catch (error) {
         console.error("Error fetching instruments:", error);
+      } finally {
         setIsLoadingInstrument(false);
       }
     };
-
+  
     fetchData();
   }, [bookingMade]);
+  
 
 
   const sortInstruments = (instrumentsToSort) => {
@@ -695,22 +733,21 @@ const InstrumentList = () => {
             color: "#014C8C",
           }}
         >
-
-        {instrument.description}
+        {/* {instrument.description} */}
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-          Type:{" "}
+          Category:{" "}
           <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-            {instrument.type}
+            {instrument.description}
           </span>
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-          Equipment:{" "}
+         Equipment Description:{" "}
           <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
             {instrument.equipment}
           </span>
           <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-            Model:{" "}
+          Model:{" "}
             <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
               {instrument.model}
             </span>
@@ -785,12 +822,12 @@ const InstrumentList = () => {
               {instrument.rejectingapproval ? "Yes" : "No"}
             </div>             */}
             <div>
-              <span style={{ fontWeight: "bold" }}>producer: </span>
+              <span style={{ fontWeight: "bold" }}>equipment producer: </span>
               {instrument.producer}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>producer_serial_number: </span>
-              {instrument.producer}
+              {instrument.serial_number}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>accessories: </span>
@@ -1182,58 +1219,70 @@ const InstrumentList = () => {
 
   return (
     <div>
-      <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
+      {!isModalOpen && !isLocationModalOpen && (
+        <>
+          <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
+          <div
+            className="search-bar"
+            style={{
+              position: 'sticky',
+              top: '90px',
+              zIndex: 999,
+              backgroundColor: '#fff',
+              padding: '10px',
+              borderBottom: '10px solid #ccc',
+              fontWeight: "bold",
+              border: "4px solid blue",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search by Category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                fontSize: "1em", // Adjust as needed
+                marginRight: "10px", // Adds spacing between inputs
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search by Equipment Description..."
+              value={equipmentSearchTerm}
+              onChange={(e) => setEquipmentSearchTerm(e.target.value)}
+              style={{
+                fontSize: "1em", // Adjust as needed
+                marginRight: "10px", // Adds spacing between inputs
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search by Model..."
+              value={modelSearchTerm}
+              onChange={(e) => setModelSearchTerm(e.target.value)}
+              style={{
+                fontSize: "1em", // Adjust as needed
+                marginRight: "10px", // Adds spacing between inputs
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search by User..."
+              value={bookedbySearchTerm}
+              onChange={(e) => setBookedBySearchTerm(e.target.value)}
+              style={{
+                fontSize: "1em" // Adjust as needed
+              }}
+            />
+          </div>
+        </>
+      )}
       {promptLoginForViewing && (
         <div className="login-prompt">
           You must be logged in to view booked instruments.
         </div>
       )}
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Search by instrument name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            fontWeight: "bold",
-            border: "2px solid blue",
-            fontSize: "1em" // Adjust as needed
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Search by equipment..."
-          value={equipmentSearchTerm}
-          onChange={(e) => setEquipmentSearchTerm(e.target.value)}
-          style={{
-            fontWeight: "bold",
-            border: "2px solid blue",
-            fontSize: "1em" // Adjust as needed
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Search by model..."
-          value={modelSearchTerm}
-          onChange={(e) => setModelSearchTerm(e.target.value)}
-          style={{
-            fontWeight: "bold",
-            border: "2px solid blue",
-            fontSize: "1em" // Adjust as needed
-          }}
-        />
-        <input
-          type="text"
-          placeholder="Search by user..."
-          value={bookedbySearchTerm}
-          onChange={(e) => setBookedBySearchTerm(e.target.value)}
-          style={{
-            fontWeight: "bold",
-            border: "2px solid blue",
-            fontSize: "1em" // Adjust as needed
-          }}
-        />
-      </div>
+      {/* ... rest of your component ... */}
       {viewMode === "byMe" && (
         <BookedByMeView
           searchTerm={searchTerm}
@@ -1241,8 +1290,7 @@ const InstrumentList = () => {
           modelSearchTerm={modelSearchTerm}
           handleViewAllInstruments={handleViewAllInstruments}
           filteredInstruments={filteredInstruments}
-        />
-      )}
+        />)}
       {viewMode === "byAll" && (
         <BookedByAllUsersView
           searchTerm={searchTerm}
@@ -1250,27 +1298,23 @@ const InstrumentList = () => {
           modelSearchTerm={modelSearchTerm}
           handleViewAllInstruments={handleViewAllInstruments}
           filteredInstruments={filteredInstruments}
-        />
-      )}
+        />)}
       {viewMode === "all" && (
         <AllInstrumentsView
           searchTerm={searchTerm}
           equipmentSearchTerm={equipmentSearchTerm}
           modelSearchTerm={modelSearchTerm}
-        />
-      )}
+        />)}
       <BookingModal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
         onSubmitBooking={handleBookingSubmit}
-        setIsModalOpen={setIsModalOpen}
-      />
+        setIsModalOpen={setIsModalOpen} />
       <LocationModal
         isOpen={isLocationModalOpen}
         onRequestClose={handleModalClose}
         onSubmitLocation={handleLocationSubmit}
-        currentInstrumentId={currentInstrumentId}
-      />
+        currentInstrumentId={currentInstrumentId} />
     </div>
   );
 

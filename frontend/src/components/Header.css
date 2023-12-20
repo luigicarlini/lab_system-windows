@@ -1,68 +1,70 @@
 /* Base GitHub-like header styling */
 .githubHeader {
-    background-color: #24292e;
-    padding: 10px 20px;
-  }
-  
-  /* Navbar styling */
-  .navbar.githubNav {
-    background-color: transparent;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Navbar brand styling */
-  .navbar-brand.githubBrand {
-    color: #ffffff;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  
-  .navbar-brand.githubBrand:hover {
-    color: #95d5f5; /* Light blue for hover */
-  }
-  
-  /* Navbar links styling */
-  .nav-link.githubNavLink {
-    color: #c9d1d9; /* GitHub-like grey text */
-    margin: 0 10px;
-    text-decoration: none;
-  }
-  
-  .nav-link.githubNavLink:hover {
-    color: #95d5f5; /* Light blue for hover */
-  }
-  
-  /* Active nav-link styling */
-  .nav-link.githubNavLink.active {
-    color: #ffffff;
-    font-weight: 600;
-  }
-  
-  /* Navbar text (for the Welcome message) */
-  .navbar-text.githubNavText {
-    color: #c9d1d9;
-    margin-left: auto; /* To push it to the right side */
-  }
-  
-  /* Link for the login when not logged in */
-  .githubLoginLink {
-    color: #c9d1d9;
-    text-decoration: none;
-  }
-  
-  .githubLoginLink:hover {
-    color: #95d5f5; /* Light blue for hover */
-  }
-  
-  .logoutButton {
-    background-color: red !important;
-    color: #fff !important;
-    border: none !important;
-  }
-  
-  
-  
-  
-  
-  
+  background-color: #24292e;
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* Ensure it stays on top of other elements */
+}
 
+/* Navbar styling */
+.navbar.githubNav {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Navbar brand styling */
+.navbar-brand.githubBrand {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.navbar-brand.githubBrand:hover {
+  color: #95d5f5;
+  /* Light blue for hover */
+}
+
+/* Navbar links styling */
+.nav-link.githubNavLink {
+  color: #c9d1d9;
+  /* GitHub-like grey text */
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+.nav-link.githubNavLink:hover {
+  color: #95d5f5;
+  /* Light blue for hover */
+}
+
+/* Active nav-link styling */
+.nav-link.githubNavLink.active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Navbar text (for the Welcome message) */
+.navbar-text.githubNavText {
+  color: #c9d1d9;
+  margin-left: auto;
+  /* To push it to the right side */
+}
+
+/* Link for the login when not logged in */
+.githubLoginLink {
+  color: #c9d1d9;
+  text-decoration: none;
+}
+
+.githubLoginLink:hover {
+  color: #95d5f5;
+  /* Light blue for hover */
+}
+
+.logoutButton {
+  background-color: red !important;
+  color: #fff !important;
+  border: none !important;
+}
