@@ -1,42 +1,3 @@
-// outline the key states and transitions to  visualize the state machine:
-// Initial State (Available/Not Booked)
-// Instruments start in this state.
-
-// --------------  Booking Requested -------------------//
-// Trigger: User requests to book an instrument.
-// Transition: From "Available" to "Booking Requested".
-//--------------------------------------------------------
-
-//--------------Waiting for Admin Approval--------------//
-// Trigger: Booking request is pending admin approval.
-// Transition: From "Booking Requested" to "Waiting for Admin Approval".
-//--------------------------------------------------------
-
-//--------------Booked----------------------------------//
-// Trigger: Admin approves the booking request.
-// Transition: From "Waiting for Admin Approval" to "Booked".
-//--------------------------------------------------------
-
-//--------------Release Requested-----------------------//
-// Trigger: User requests to release the instrument.
-// Transition: From "Booked" to "Release Requested".
-//--------------------------------------------------------
-
-//--------------Waiting for Admin to Confirm Release----//
-// Trigger: Release request is pending admin approval.
-// Transition: From "Release Requested" to "Waiting for Admin to Confirm Release".
-//--------------------------------------------------------
-
-//--------------Available/Not Booked (Again)------------//
-// Trigger: Admin approves the release request.
-// Transition: From "Waiting for Admin to Confirm Release" back to "Available/Not Booked".
-//--------------------------------------------------------
-
-//--------------Booking Rejected-----------------------//
-// Trigger: Admin rejects the booking request.
-// Transition: From "Waiting for Admin Approval" to "Available/Not Booked".
-//--------------------------------------------------------
-
 import React, { useEffect, useState } from "react";
 import {
   getAllInstruments,
@@ -170,50 +131,6 @@ const InstrumentList = () => {
   // Update Cache on State Changes: Whenever an instrument's status changes due to user actions (booking, canceling, releasing, rejecting, etc.), 
   // update both the state and the cache to reflect these changes. Maintain Existing State Transitions: Ensure that all existing state transitions remain intact 
   // and function as expected.
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setIsLoadingInstrument(true);
-
-  //     try {
-  //       const allInstruments = await getAllInstruments();
-  //       setInstruments(allInstruments);
-
-  //       // Retrieve cached statuses or initialize an empty object
-  //       const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
-  //       const statusMap = { ...cachedStatuses };
-
-  //       // Fetch statuses for all instruments
-  //       const statuses = await Promise.all(
-  //         allInstruments.map((instrument) =>
-  //           getInstrumentStatus(instrument._id)
-  //         )
-  //       );
-		
-		
-
-  //       allInstruments.forEach((instrument, index) => {
-  //         const currentStatus = statuses[index].availability //? "Available" : "Booked";
-	// 	  if (currentStatus === "Available" || currentStatus === "Booked"){
-	// 	    statusMap[instrument._id] = currentStatus;
-	// 	  } else if (!statusMap[instrument._id] || statusMap[instrument._id] === "Unknown"){
-  //         statusMap[instrument._id] = statuses[index].availability ? "Available" : "Booked";			  
-	// 	  }
-  //       });
-
-  //       setInstrumentStatuses(statusMap);
-
-  //       // Update the cache with the latest statuses
-  //       localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
-  //       setIsLoadingInstrument(false);
-  //     } catch (error) {
-  //       console.error("Error fetching instruments:", error);
-  //       setIsLoadingInstrument(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [bookingMade]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -377,8 +294,7 @@ const InstrumentList = () => {
     }
   };
 
-
-  const updateInstrumentStates = (updatedInstrument, id) => {
+const updateInstrumentStates = (updatedInstrument, id) => {
     // Update instrumentStatuses
     setInstrumentStatuses((prevStatuses) => ({
       ...prevStatuses,
@@ -726,16 +642,21 @@ const InstrumentList = () => {
 
   // Define a function to render instrument details
   const renderInstrumentDetails = (instrument) => {
+  // Determine the status of the instrument
+  let status = instrumentStatuses[instrument._id];
+  if (instrument.bookedBy === "N/A" || instrument.bookedBy === null) {
+    status = "Available";
+  }
     return (
       <div
         key={instrument._id}
         style={{
           marginBottom: "10px",
           border:
-            instrumentStatuses[instrument._id] === "Booked" &&
+          status === "Booked" &&
               instrument.bookedBy
               ? "1px solid #014C8C"
-              : instrumentStatuses[instrument._id] === "Available"
+              : status === "Available"
                 ? "3px solid #014C8C"
                 : "3px solid #014C8C",
           padding: "15px",
@@ -774,21 +695,21 @@ const InstrumentList = () => {
           <span
             style={{
               color:
-                instrumentStatuses[instrument._id] === "Booked"
+              status === "Booked"
                   ? "red"
-                  : instrumentStatuses[instrument._id] === "Available"
+                  : status === "Available"
                     ? "green"
                     : "black",
               fontWeight:
-                instrumentStatuses[instrument._id] === "Booked" ||
-                  instrumentStatuses[instrument._id] === "Available"
+              status === "Booked" ||
+              status === "Available"
                   ? "bold"
                   : "normal",
             }}
           >
-            {instrumentStatuses[instrument._id]
-              ? ` ${instrumentStatuses[instrument._id]}`
-              : " Unknown"}
+            {status
+              ? `${status}`
+              : "Unknown"}   
           </span>
         </div>
         <div>
@@ -799,16 +720,6 @@ const InstrumentList = () => {
               : instrument.bookedBy
             : "N/A"}
         </div>
-        {/* Add a visual cue for waiting status */}
-        {/* {waitingToTake.includes(instrument._id) && (
-          <div style={{ color: 'orange', fontWeight: 'bold' }}>Waiting to be taken</div>
-        )} */}
-
-        {/* Add a visual cue for returning status */}
-        {/* {returningInstruments.includes(instrument._id) && (
-          <div style={{ color: 'orange', fontWeight: 'bold' }}>Returning</div>
-        )} */}
-
         {/* Updated: Expand/Collapse Button */}
         <button onClick={() => toggleInstrumentDetails(instrument._id)}>
           {expandedInstrumentId === instrument._id ? "Collapse" : "Expand"}
@@ -885,18 +796,6 @@ const InstrumentList = () => {
               <span style={{ fontWeight: "bold" }}>notes: </span>
               {instrument.notes}
             </div>
-            {/* <div>
-              <span style={{ fontWeight: "bold" }}>Booked by: </span>
-              {instrument.bookedBy
-                ? typeof instrument.bookedBy === "object"
-                  ? instrument.bookedBy.username
-                  : instrument.bookedBy
-                : "N/A"}
-            </div> */}
-            {/* <div>
-            <span style={{ fontWeight: "bold" }}>Booked from: </span>
-            {instrument.bookedFrom || "N/A"}
-          </div> */}
             <div>
               <span style={{ fontWeight: "bold" }}>Booked until: </span>
               {instrument.bookedUntil || "N/A"}
@@ -905,9 +804,7 @@ const InstrumentList = () => {
         )}
 
         {/* Book Button */}
-        {/* {instrumentStatuses[instrument._id] === "Available" && !waitingToTake.includes(instrument._id) && !returningInstruments.includes(instrument._id) &&  */}
-        {!instrument.returning && !instrument.waiting && instrumentStatuses[instrument._id] === "Available" && (
-          // !instrument.returning &&(
+        {!instrument.returning && !instrument.waiting && (instrumentStatuses[instrument._id] === "Available" || instrument.bookedBy === "N/A" || instrument.bookedBy === null) && (
           <button
             onClick={() => handleBookInstrument(instrument._id)}
             className="book-button"

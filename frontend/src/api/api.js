@@ -102,7 +102,7 @@ export const markInstrumentAsWaitingBook = async (id, isWaiting = true) => {
 };
 
 export const markInstrumentAsReleased = async (id, isReleasing = false, location, locationRoom) => {
-  console.log(`markInstrumentAsReleasing: Attempting to set releasing status for instrument with ID: ${id} to ${isReleasing} and to ${location} and to ${locationRoom}`);
+  console.log(`markInstrumentAsReleased: Attempting to set releasing status for instrument with ID: ${id} to ${isReleasing} and to ${location} and to ${locationRoom}`);
   try {
       const response = await axios.post(`${BASE_URL}/api/instruments/releasing/${id}`, { releasing: isReleasing, location: location, locationRoom: locationRoom});
       return response.data;
