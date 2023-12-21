@@ -65,7 +65,8 @@ const InstrumentList = () => {
         if (searchTerm) {
           const searchTermLC = searchTerm.toLowerCase();
           filtered = filtered.filter((instrument) =>
-            instrument.description.toLowerCase().includes(searchTermLC)
+            //instrument.description.toLowerCase().includes(searchTermLC)
+            instrument.type.toLowerCase().includes(searchTermLC)
           );
         }
 
@@ -675,20 +676,26 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Category:{" "}
           <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+            {instrument.type}
+          </span>
+        </div>
+        <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+          Equipment name:{" "}
+          <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
             {instrument.description}
           </span>
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-         Equipment Description:{" "}
-          <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-            {instrument.equipment}
-          </span>
-          <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Model:{" "}
             <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
               {instrument.model}
             </span>
           </div>
+        <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+         Equipment Description:{" "}
+          <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+            {instrument.equipment}
+          </span>
         </div>
         <div>
           <span style={{ fontWeight: "bold" }}>Status:</span>
@@ -1009,7 +1016,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
           .filter((instrument) => {
             // Apply your search filter based on 'searchTerm'
             const searchTermLC = searchTerm.toLowerCase();
-            const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            //const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            const matchesDescription = instrument.type.toLowerCase().includes(searchTermLC);
             // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
@@ -1059,7 +1067,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         {filteredInstruments
           .filter((instrument) => {
             const searchTermLC = searchTerm.toLowerCase();
-            const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            //const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            const matchesDescription = instrument.type.toLowerCase().includes(searchTermLC);
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
@@ -1106,7 +1115,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         {filteredInstruments
           .filter((instrument) => {
             const searchTermLC = searchTerm.toLowerCase();
-            const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            //const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            const matchesDescription = instrument.type.toLowerCase().includes(searchTermLC);
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
