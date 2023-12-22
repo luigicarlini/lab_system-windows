@@ -648,6 +648,9 @@ const updateInstrumentStates = (updatedInstrument, id) => {
   if (instrument.bookedBy === "N/A" || instrument.bookedBy === null) {
     status = "Available";
   }
+  if (instrument.bookedBy) {
+    instrumentStatuses[instrument._id] = "Booked";
+  }
     return (
       <div
         key={instrument._id}
@@ -811,7 +814,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         )}
 
         {/* Book Button */}
-        {!instrument.returning && !instrument.waiting && (instrumentStatuses[instrument._id] === "Available" || instrument.bookedBy === "N/A" || instrument.bookedBy === null) && (
+        {!instrument.returning && !instrument.waiting && !instrument.bookedUntil && (instrumentStatuses[instrument._id] === "Available" || instrument.bookedBy === "N/A" || instrument.bookedBy === null) && (
           <button
             onClick={() => handleBookInstrument(instrument._id)}
             className="book-button"
@@ -827,9 +830,14 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         )}
 
         {/* Release Button */}
+        {/* {console.log("Debug - Instrument Status: ", instrumentStatuses[instrument._id])}
+            {console.log("Debug - Booked By: ", instrument.bookedBy)}
+            {console.log("Debug - User: ", user)}
+            {console.log("Debug - Booked Until: ", instrument.bookedUntil)} */}
         {instrumentStatuses[instrument._id] === "Booked" &&
           (instrument.bookedBy && user && (instrument.bookedBy._id === user.id || instrument.bookedBy === user.id || user.username === "super user")) &&
-          !instrument.rejecting && !instrument.waiting && (
+          !instrument.rejecting && !instrument.waiting &&
+          (instrument.bookedUntil && instrument.bookedUntil !== "N/A") && (
             <div>
               {/* Spinner for Loading State */}
               {isLoading && (
@@ -839,13 +847,12 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                 </div>
               )}
 
-              {/* Modification: Check if the instrument is in the pendingReleaseInstruments array */}
+              {/* Check if the instrument is in the pendingReleaseInstruments array */}
               {(pendingReleaseInstruments.includes(instrument._id) || instrument.releasing) ? (
                 <button
                   onClick={() => handleReleasingClick(instrument._id)}
                   className="pending-release"
                 >
-                  {/* user is releasing instrument */}
                   Release pending admin approval...
                 </button>
               ) : (
@@ -853,7 +860,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   onClick={() => handleReleaseInstrument(instrument._id)}
                   style={{
                     marginTop: "10px",
-                    backgroundColor: "#FF0000", // Red for release action
+                    backgroundColor: "#FF0000",
                     color: "white",
                     border: "none",
                     padding: "5px 10px",

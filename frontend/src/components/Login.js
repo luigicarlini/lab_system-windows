@@ -36,7 +36,8 @@ const Login = () => {
         password: password,
       });
 
-      console.log("Attempting to login with:", { username, password });
+      //console.log("Attempting to login with:", { username, password });
+      console.log("Attempting to login with:", { username });
       console.log(response.data.payload);
       console.log(response.data.payload.username);
       console.log(response.data.payload.id);
