@@ -224,3 +224,36 @@ input {
     /* Ensure it scrolls with the page */
     position: relative;
 }
+
+.category-container {
+    position: sticky;
+    top: 0; /* Adjust this value as needed */
+    height: 100vh; /* Optional: to take full height of the viewport */
+    overflow-y: auto; /* Allows scrolling within the category container */
+    background-color: #fff; /* Optional: background color */
+    /* Add any additional styling you need for the container */
+  }
+
+.category-button {
+    display: block;
+    width: 100%;
+    padding: 30px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .category-button:hover {
+    background-color: #e0e0e0;
+    color: #000;
+  }
+  
+  .category-button:active {
+    background-color: #d0d0d0;
+  }
+  

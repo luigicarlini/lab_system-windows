@@ -50,9 +50,7 @@ const InstrumentList = () => {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [currentInstrumentId, setCurrentInstrumentId] = useState(null);
   const [modalContext, setModalContext] = useState(null); // 'waiting' , 'releasing' or 'returning'
-  //const [location, setLocationDetails] = useState(null);
-  //const location = useLocation();
-  //console.log("Current Path:", location.pathname);
+  const [selectedCategory, setSelectedCategory] = useState(null); //State for Selected Category: Add a state to track the currently selected category.
 
   useEffect(() => {
     const fetchData = async () => {
@@ -177,7 +175,38 @@ const InstrumentList = () => {
   
     fetchData();
   }, [bookingMade]);
-  
+
+  // Function to handle category selection
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const handleAllCategories = () => {
+    setSelectedCategory(null); // Assuming you have a state variable 'selectedCategory'
+  };
+
+  const renderCategoryButtons = () => {
+    const categories = [...new Set(instruments.map(instr => instr.type))];
+    return (
+      <>
+        <button
+          onClick={handleAllCategories}
+          className="category-button"
+        >
+          All Categories
+        </button>
+        {categories.map(category => (
+          <button
+            key={category}
+            onClick={() => handleCategorySelect(category)}
+            className="category-button"
+          >
+            {category}
+          </button>
+        ))}
+      </>
+    );
+  };
 
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
@@ -643,6 +672,10 @@ const updateInstrumentStates = (updatedInstrument, id) => {
 
   // Define a function to render instrument details
   const renderInstrumentDetails = (instrument) => {
+    // Skip rendering if the instrument's category doesn't match the selected category
+    if (selectedCategory && instrument.type !== selectedCategory) {
+      return null;
+    }
   // Determine the status of the instrument
   let status = instrumentStatuses[instrument._id];
   if (instrument.bookedBy === "N/A" || instrument.bookedBy === null) {
@@ -652,6 +685,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
     instrumentStatuses[instrument._id] = "Booked";
   }
     return (
+      
       <div
         key={instrument._id}
         style={{
@@ -1152,58 +1186,90 @@ const updateInstrumentStates = (updatedInstrument, id) => {
       {!isModalOpen && !isLocationModalOpen && (
         <>
           <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
-          <div
-            className="search-bar"
-            style={{
-              position: 'sticky',
-              top: '90px',
-              zIndex: 999,
-              backgroundColor: '#fff',
-              padding: '10px',
-              borderBottom: '10px solid #ccc',
-              fontWeight: "bold",
-              border: "4px solid blue",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Search by Category..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                fontSize: "1em", // Adjust as needed
-                marginRight: "10px", // Adds spacing between inputs
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by Equipment Description..."
-              value={equipmentSearchTerm}
-              onChange={(e) => setEquipmentSearchTerm(e.target.value)}
-              style={{
-                fontSize: "1em", // Adjust as needed
-                marginRight: "10px", // Adds spacing between inputs
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by Model..."
-              value={modelSearchTerm}
-              onChange={(e) => setModelSearchTerm(e.target.value)}
-              style={{
-                fontSize: "1em", // Adjust as needed
-                marginRight: "10px", // Adds spacing between inputs
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by User..."
-              value={bookedbySearchTerm}
-              onChange={(e) => setBookedBySearchTerm(e.target.value)}
-              style={{
-                fontSize: "1em" // Adjust as needed
-              }}
-            />
+          <div style={{ display: 'flex' }}>
+          <div className="category-container" style={{ width: '20%' /* additional styling for category list */ }}>
+            {renderCategoryButtons()}
+            </div>
+            <div style={{ width: '87%' /* additional styling for the rest of the content */ }}>
+              <div
+                className="search-bar"
+                style={{
+                  position: 'sticky',
+                  top: '90px',
+                  zIndex: 999,
+                  backgroundColor: '#fff',
+                  padding: '10px',
+                  borderBottom: '10px solid #ccc',
+                  fontWeight: "bold",
+                  border: "4px solid blue",
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Search by Category..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em",
+                    marginRight: "10px",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Equipment Description..."
+                  value={equipmentSearchTerm}
+                  onChange={(e) => setEquipmentSearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em",
+                    marginRight: "10px",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Model..."
+                  value={modelSearchTerm}
+                  onChange={(e) => setModelSearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em",
+                    marginRight: "10px",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by User..."
+                  value={bookedbySearchTerm}
+                  onChange={(e) => setBookedBySearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em"
+                  }}
+                />
+              </div>
+              {viewMode === "byMe" && (
+                <BookedByMeView
+                  searchTerm={searchTerm}
+                  equipmentSearchTerm={equipmentSearchTerm}
+                  modelSearchTerm={modelSearchTerm}
+                  handleViewAllInstruments={handleViewAllInstruments}
+                  filteredInstruments={filteredInstruments}
+                />
+              )}
+              {viewMode === "byAll" && (
+                <BookedByAllUsersView
+                  searchTerm={searchTerm}
+                  equipmentSearchTerm={equipmentSearchTerm}
+                  modelSearchTerm={modelSearchTerm}
+                  handleViewAllInstruments={handleViewAllInstruments}
+                  filteredInstruments={filteredInstruments}
+                />
+              )}
+              {viewMode === "all" && (
+                <AllInstrumentsView
+                  searchTerm={searchTerm}
+                  equipmentSearchTerm={equipmentSearchTerm}
+                  modelSearchTerm={modelSearchTerm}
+                />
+              )}
+            </div>
           </div>
         </>
       )}
@@ -1212,42 +1278,22 @@ const updateInstrumentStates = (updatedInstrument, id) => {
           You must be logged in to view booked instruments.
         </div>
       )}
-      {/* ... rest of your component ... */}
-      {viewMode === "byMe" && (
-        <BookedByMeView
-          searchTerm={searchTerm}
-          equipmentSearchTerm={equipmentSearchTerm}
-          modelSearchTerm={modelSearchTerm}
-          handleViewAllInstruments={handleViewAllInstruments}
-          filteredInstruments={filteredInstruments}
-        />)}
-      {viewMode === "byAll" && (
-        <BookedByAllUsersView
-          searchTerm={searchTerm}
-          equipmentSearchTerm={equipmentSearchTerm}
-          modelSearchTerm={modelSearchTerm}
-          handleViewAllInstruments={handleViewAllInstruments}
-          filteredInstruments={filteredInstruments}
-        />)}
-      {viewMode === "all" && (
-        <AllInstrumentsView
-          searchTerm={searchTerm}
-          equipmentSearchTerm={equipmentSearchTerm}
-          modelSearchTerm={modelSearchTerm}
-        />)}
       <BookingModal
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
         onSubmitBooking={handleBookingSubmit}
-        setIsModalOpen={setIsModalOpen} />
+        setIsModalOpen={setIsModalOpen}
+      />
       <LocationModal
         isOpen={isLocationModalOpen}
         onRequestClose={handleModalClose}
         onSubmitLocation={handleLocationSubmit}
-        currentInstrumentId={currentInstrumentId} />
+        currentInstrumentId={currentInstrumentId}
+      />
     </div>
   );
-
+  
+  
 };
 
 export default InstrumentList;
