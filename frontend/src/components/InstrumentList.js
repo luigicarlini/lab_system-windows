@@ -40,6 +40,8 @@ const InstrumentList = () => {
   const [filteredInstruments, setFilteredInstruments] = useState([]); // <-- Add state to handle filtered instruments
   const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
   const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [locationSearchTerm, setLocationSearchTerm ] = useState("");
+  const [projectSearchTerm, setProjectSearchTerm ] = useState("");
   const [bookedbySearchTerm, setBookedBySearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("all"); // possible values: "all", "byMe", "byAll"
   const isSuperUser = user && user.username === SUPER_USER_USERNAME;
@@ -92,6 +94,20 @@ const InstrumentList = () => {
           );
         }
 
+        if (locationSearchTerm) {
+          const locationSearchTermLC = locationSearchTerm.toLowerCase();
+          filtered = filtered.filter((instrument) =>
+            instrument.location.toLowerCase().includes(locationSearchTermLC)
+          );
+        }
+
+        if (projectSearchTerm) {
+          const projectSearchTermLC = projectSearchTerm.toLowerCase();
+          filtered = filtered.filter((instrument) =>
+            instrument.project.toLowerCase().includes(projectSearchTermLC)
+          );
+        }
+
         if (bookedbySearchTerm) {
           const bookedbySearchTermLC = bookedbySearchTerm.toLowerCase();
           filtered = filtered.filter((instrument) =>
@@ -110,6 +126,8 @@ const InstrumentList = () => {
         console.log("searchTerm:", searchTerm);
         console.log("equipmentSearchTerm:", equipmentSearchTerm);
         console.log("modelSearchTerm:", modelSearchTerm);
+        console.log("locationSearchTerm:", locationSearchTerm);
+        console.log("projectSearchTerm:", projectSearchTerm);
         console.log("bookedbySearchTerm:", bookedbySearchTerm);
         console.log("bookedByMode:", bookedByMode);
         console.log("user:", user);
@@ -120,7 +138,7 @@ const InstrumentList = () => {
     };
 
     fetchData();
-  }, [searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, bookedByMode, user]);
+  }, [searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm, bookedByMode, user]);
 
   // Caching Mechanism:
   // implement a caching mechanism that respects the existing state machine, we need to focus on caching the status of instruments without altering 
@@ -185,13 +203,36 @@ const InstrumentList = () => {
     setSelectedCategory(null); // Assuming you have a state variable 'selectedCategory'
   };
 
+  // const renderCategoryButtons = () => {
+  //   const categories = [...new Set(instruments.map(instr => instr.type))];
+  //   return (
+  //     <>
+  //       <button
+  //         onClick={handleAllCategories}
+  //         className="category-button"
+  //       >
+  //         All Categories
+  //       </button>
+  //       {categories.map(category => (
+  //         <button
+  //           key={category}
+  //           onClick={() => handleCategorySelect(category)}
+  //           className="category-button"
+  //         >
+  //           {category}
+  //         </button>
+  //       ))}
+  //     </>
+  //   );
+  // };
+
   const renderCategoryButtons = () => {
     const categories = [...new Set(instruments.map(instr => instr.type))];
     return (
       <>
         <button
           onClick={handleAllCategories}
-          className="category-button"
+          className={`category-button ${selectedCategory === null ? 'selected-category' : ''}`}
         >
           All Categories
         </button>
@@ -199,7 +240,7 @@ const InstrumentList = () => {
           <button
             key={category}
             onClick={() => handleCategorySelect(category)}
-            className="category-button"
+            className={`category-button ${selectedCategory === category ? 'selected-category' : ''}`}
           >
             {category}
           </button>
@@ -207,6 +248,7 @@ const InstrumentList = () => {
       </>
     );
   };
+  
 
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
@@ -1002,7 +1044,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
     );
   };
 
-  const AllInstrumentsView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm }) => {
+  const AllInstrumentsView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm }) => {
     return (
       <div>
         {/* Buttons to filter the view */}
@@ -1062,9 +1104,13 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             // Apply equipment and model filters based on 'equipmentSearchTerm' and 'modelSearchTerm'
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const locationSearchTermLC = locationSearchTerm.toLowerCase();
+            const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1075,6 +1121,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
               matchesDescription ||
               matchesEquipment ||
               matchesModel ||
+              matchesLocation ||
+              matchesProject || 
               matchesBookedby
             );
           })
@@ -1087,7 +1135,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
   };
 
 
-  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+  const BookedByMeView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
     return (
       <div>
         <button
@@ -1113,8 +1161,12 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const locationSearchTermLC = locationSearchTerm.toLowerCase();
+            const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesProject = instrument.project.toLowerCase().includes(projectSearchTermLC);
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1125,6 +1177,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
               matchesDescription ||
               matchesEquipment ||
               matchesModel ||
+              matchesLocation ||
+              matchesProject ||
               matchesBookedby
             );
           })
@@ -1135,7 +1189,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
     );
   };
 
-  const BookedByAllUsersView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+  const BookedByAllUsersView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
     return (
       <div>
         <button
@@ -1161,8 +1215,12 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const locationSearchTermLC = locationSearchTerm.toLowerCase();
+            const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesProject = instrument.project.toLowerCase().includes(projectSearchTermLC);
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1172,6 +1230,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
               matchesDescription ||
               matchesEquipment ||
               matchesModel ||
+              matchesLocation ||
+              matchesProject ||
               matchesBookedby
             );
           })
@@ -1187,10 +1247,10 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         <>
           <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
           <div style={{ display: 'flex' }}>
-          <div className="category-container" style={{ width: '20%' /* additional styling for category list */ }}>
+          <div className="category-container" style={{ width: '25%' /* additional styling for category list */ }}>
             {renderCategoryButtons()}
             </div>
-            <div style={{ width: '87%' /* additional styling for the rest of the content */ }}>
+            <div style={{ width: '95%' /* additional styling for the rest of the content */ }}>
               <div
                 className="search-bar"
                 style={{
@@ -1212,6 +1272,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   style={{
                     fontSize: "1em",
                     marginRight: "10px",
+                    color: "green", // Set the text color to green
                   }}
                 />
                 <input
@@ -1222,6 +1283,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   style={{
                     fontSize: "1em",
                     marginRight: "10px",
+                    color: "green",
                   }}
                 />
                 <input
@@ -1232,6 +1294,29 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   style={{
                     fontSize: "1em",
                     marginRight: "10px",
+                    color: "green",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Location..."
+                  value={locationSearchTerm}
+                  onChange={(e) => setLocationSearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em",
+                    marginRight: "10px",
+                    color: "green",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Project..."
+                  value={projectSearchTerm}
+                  onChange={(e) => setProjectSearchTerm(e.target.value)}
+                  style={{
+                    fontSize: "1em",
+                    marginRight: "10px",
+                    color: "green",
                   }}
                 />
                 <input
@@ -1240,7 +1325,9 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   value={bookedbySearchTerm}
                   onChange={(e) => setBookedBySearchTerm(e.target.value)}
                   style={{
-                    fontSize: "1em"
+                    fontSize: "1em",
+                    marginRight: "10px",
+                    color: "green",
                   }}
                 />
               </div>
@@ -1249,6 +1336,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   searchTerm={searchTerm}
                   equipmentSearchTerm={equipmentSearchTerm}
                   modelSearchTerm={modelSearchTerm}
+                  locationSearchTerm={locationSearchTerm}
+                  projectSearchTerm={projectSearchTerm}
                   handleViewAllInstruments={handleViewAllInstruments}
                   filteredInstruments={filteredInstruments}
                 />
@@ -1258,6 +1347,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   searchTerm={searchTerm}
                   equipmentSearchTerm={equipmentSearchTerm}
                   modelSearchTerm={modelSearchTerm}
+                  locationSearchTerm={locationSearchTerm}
+                  projectSearchTerm={projectSearchTerm}
                   handleViewAllInstruments={handleViewAllInstruments}
                   filteredInstruments={filteredInstruments}
                 />
@@ -1267,6 +1358,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   searchTerm={searchTerm}
                   equipmentSearchTerm={equipmentSearchTerm}
                   modelSearchTerm={modelSearchTerm}
+                  locationSearchTerm={locationSearchTerm}
+                  projectSearchTerm={projectSearchTerm}
                 />
               )}
             </div>

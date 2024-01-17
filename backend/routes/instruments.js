@@ -35,7 +35,7 @@ router.post("/book/:id", async (req, res) => {
     //const { userid, bookedBy, bookedFrom, bookedUntil } = req.body;
     // Extracting booking details including the new location from the request body
     const { userid, bookedBy, bookedFrom, bookedUntil, location } = req.body;
-    
+
     console.log("Complete req.body:", req.body);
     const instrumentId = req.params.id;
 
@@ -135,7 +135,7 @@ router.post('/release/:id', async (req, res) => {
         console.log("Availability instrument:", instrument.availability);
         // Revert the location back to originalLocation
         if (instrument.originalLocation) {
-            instrument.location = instrument.originalLocation;
+          instrument.location = instrument.originalLocation;
         }
         // Clear the originalLocation attribute        
         instrument.originalLocation = null;
@@ -163,7 +163,7 @@ router.post('/returning/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'returning' status based on the request body
     // If 'returning' is not provided in the request, default to true
@@ -172,7 +172,7 @@ router.post('/returning/:id', async (req, res) => {
     console.log("backend instrument.location:", req.body.locationRoom);
 
     instrument.returning = req.body.returning; // This should be set according to what was passed in the request body
-    instrument.location_inside_room = req.body.location;    
+    instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
     console.log("backend instrument.returning:", instrument.returning);
     console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
@@ -194,7 +194,7 @@ router.post('/waiting/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
@@ -203,7 +203,7 @@ router.post('/waiting/:id', async (req, res) => {
     console.log("backend instrument.location:", req.body.location);
 
     instrument.waiting = req.body.waiting;
-    instrument.location_inside_room = req.body.location;    
+    instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
     //instrument.waiting = req.body.waiting !== undefined ? req.body.waiting : true;
     console.log("backend instrument.waiting:", instrument.waiting);
@@ -231,7 +231,7 @@ router.post('/waitingbook/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
@@ -257,7 +257,7 @@ router.post('/releasing/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // If 'releasing' is not provided in the request, default to false
     console.log("backend instrument.returning:", req.body.returning);
@@ -266,7 +266,7 @@ router.post('/releasing/:id', async (req, res) => {
 
 
     instrument.releasing = req.body.releasing;
-    instrument.location_inside_room = req.body.location;    
+    instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
     console.log("backend instrument.releasing:", instrument.releasing);
     console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
@@ -284,7 +284,7 @@ router.post('/cancel/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
@@ -300,10 +300,10 @@ router.post('/cancel/:id', async (req, res) => {
     instrument.waiting = false;
     instrument.rejecting = false;
     await instrument.save();
-    res.status(200).json({ 
-      message: `User booking canceled for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}`, 
-      instrument 
-  });
+    res.status(200).json({
+      message: `User booking canceled for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}`,
+      instrument
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -314,7 +314,7 @@ router.post('/reject/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
@@ -332,10 +332,10 @@ router.post('/reject/:id', async (req, res) => {
       instrument.bookedUntil = null; // Adjusted the property names
     }
     await instrument.save();
-    res.status(200).json({ 
-      message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejecting}`, 
-      instrument 
-  });
+    res.status(200).json({
+      message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejecting}`,
+      instrument
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -347,7 +347,7 @@ router.post('/rejectapproval/:id', async (req, res) => {
   try {
     const instrument = await Instrument.findById(req.params.id);
     if (!instrument) {
-        return res.status(404).json({ message: "Instrument not found" });
+      return res.status(404).json({ message: "Instrument not found" });
     }
     // Toggle the 'waiting' status based on the request body
     // If 'waiting' is not provided in the request, default to true
@@ -363,10 +363,10 @@ router.post('/rejectapproval/:id', async (req, res) => {
       instrument.bookedUntil = null; // Adjusted the property names
     }
     await instrument.save();
-    res.status(200).json({ 
-      message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejectingapproval}`, 
-      instrument 
-  });
+    res.status(200).json({
+      message: `User booking rejected for instrument. Waiting: ${instrument.waiting}, Returning: ${instrument.returning}, Rejecting: ${instrument.rejectingapproval}`,
+      instrument
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

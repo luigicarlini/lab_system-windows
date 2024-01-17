@@ -256,4 +256,14 @@ input {
   .category-button:active {
     background-color: #d0d0d0;
   }
+
+  /* Define a style for the selected category button */
+  .selected-category {
+      background-color: #2600ff;
+      /* You can choose a color you prefer */
+      color: #ffffff;
+      /* Text color when selected */
+      font-weight: bold;
+      /* Make it bold or apply your preferred styles */
+  }
   
