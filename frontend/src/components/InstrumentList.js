@@ -250,36 +250,81 @@ const InstrumentList = () => {
   };
   
 
+  // const sortInstruments = (instrumentsToSort) => {
+  //   return [...instrumentsToSort].sort((a, b) => {
+  //     if (!user) {
+  //       return 0;
+  //     }
+
+  //     const aIsBookedByUser = a.bookedBy && a.bookedBy._id === user.id;
+  //     const bIsBookedByUser = b.bookedBy && b.bookedBy._id === user.id;
+  //     const aIsBooked = !!a.bookedBy;
+  //     const bIsBooked = !!b.bookedBy;
+
+  //     if (aIsBookedByUser && !bIsBookedByUser) {
+  //       return -1;
+  //     }
+
+  //     if (!aIsBookedByUser && bIsBookedByUser) {
+  //       return 1;
+  //     }
+
+  //     if (aIsBooked && !bIsBooked) {
+  //       return -1;
+  //     }
+
+  //     if (!aIsBooked && bIsBooked) {
+  //       return 1;
+  //     }
+
+  //     return 0;
+  //   });
+  // };
+
+  //const sortInstruments = (instrumentsToSort, user, pendingReleaseInstruments) => {
   const sortInstruments = (instrumentsToSort) => {
     return [...instrumentsToSort].sort((a, b) => {
       if (!user) {
         return 0;
       }
-
+  
       const aIsBookedByUser = a.bookedBy && a.bookedBy._id === user.id;
       const bIsBookedByUser = b.bookedBy && b.bookedBy._id === user.id;
       const aIsBooked = !!a.bookedBy;
       const bIsBooked = !!b.bookedBy;
+      const aWaitingAndNotReturning = a.waiting && !a.returning;
+      const bWaitingAndNotReturning = b.waiting && !b.returning;
+      const aCondition = aWaitingAndNotReturning && (pendingReleaseInstruments.includes(a._id) || a.releasing);
+      const bCondition = bWaitingAndNotReturning && (pendingReleaseInstruments.includes(b._id) || b.releasing);
 
+      if (aCondition && !bCondition) {
+        return -1;
+      }
+  
+      if (!aCondition && bCondition) {
+        return 1;
+      }
+  
       if (aIsBookedByUser && !bIsBookedByUser) {
         return -1;
       }
-
+  
       if (!aIsBookedByUser && bIsBookedByUser) {
         return 1;
       }
-
+  
       if (aIsBooked && !bIsBooked) {
         return -1;
       }
-
+  
       if (!aIsBooked && bIsBooked) {
         return 1;
       }
-
+  
       return 0;
     });
   };
+  
 
   const toggleInstrumentDetails = (id) => {
     if (expandedInstrumentId === id) {
@@ -777,7 +822,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
           </span>
         </div>
         <div>
-          <span style={{ fontWeight: "bold" }}>Status:</span>
+          <span style={{ fontWeight: "bold" }}>Status: </span>
           <span
             style={{
               color:
@@ -1166,7 +1211,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
             const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
-            const matchesProject = instrument.project.toLowerCase().includes(projectSearchTermLC);
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1220,7 +1265,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
             const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
-            const matchesProject = instrument.project.toLowerCase().includes(projectSearchTermLC);
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
