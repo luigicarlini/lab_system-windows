@@ -82,22 +82,6 @@ Initialize a new NodeJS project:
 ## npm init -y
 Your backend directory might look something like this:
 
-backend/
-├── node_modules/
-├── controllers/
-│   ├── instrumentsController.js
-│   └── userController.js
-├── models/
-│   ├── instrumentModel.js
-│   └── userModel.js
-├── routes/
-│   ├── instrumentRoutes.js
-│   └── userRoutes.js
-├── utils/
-│   └── excelImporter.js
-├── app.js
-└── package.json
-
 node_modules/: All your installed npm packages will reside here.
 controllers/: Houses the logic for handling client requests.
 models/: Describes the data model and schema for MongoDB.
@@ -109,28 +93,7 @@ app.js: Main file to run your NodeJS server.
 ## Frontend (React)
 Navigate back to the telecom_lab_booking directory and create a React app:
 
-npx create-react-app frontend
-Your frontend directory might look something like this:
-
-java
-Copy code
-frontend/
-├── node_modules/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── InstrumentList.js
-│   │   ├── InstrumentItem.js
-│   │   ├── BookingForm.js
-│   │   └── ...
-│   ├── pages/
-│   │   ├── Home.js
-│   │   ├── Login.js
-│   │   └── Dashboard.js
-│   ├── App.js
-│   └── index.js
-├── package.json
-└── ...
+## npx create-react-app frontend
 
 node_modules/: Installed npm packages for the frontend.
 public/: Static files.
@@ -142,15 +105,6 @@ README.md: Documentation on how to run and use your system.
 .gitignore: List of files and folders to ignore if you're using Git.
 .env: Environment variables like your MongoDB connection string.
 
-
-So, the complete project structure might look like:
-
-telecom_lab_booking/
-├── backend/
-│   ├── ... (as described above)
-└── frontend/
-    ├── ... (as described above)
-This project structure is just a suggestion and could vary depending on the needs and complexity of your project.
 
 
 
