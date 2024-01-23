@@ -36,12 +36,14 @@ const InstrumentList = () => {
   const [promptLoginForViewing, setPromptLoginForViewing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [bookedByMode, setBookedByMode] = useState(false);
+  const [pendingApprovalMode, setPendingApprovalMode] = useState(false);
+  const [pendingReleaselMode, setPendingReleaseMode] = useState(false);
   const [instrumentsBookedByMe, setInstrumentsBookedByMe] = useState([]);
   const [filteredInstruments, setFilteredInstruments] = useState([]); // <-- Add state to handle filtered instruments
   const [equipmentSearchTerm, setEquipmentSearchTerm] = useState("");
   const [modelSearchTerm, setModelSearchTerm] = useState("");
-  const [locationSearchTerm, setLocationSearchTerm ] = useState("");
-  const [projectSearchTerm, setProjectSearchTerm ] = useState("");
+  const [locationSearchTerm, setLocationSearchTerm] = useState("");
+  const [projectSearchTerm, setProjectSearchTerm] = useState("");
   const [bookedbySearchTerm, setBookedBySearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("all"); // possible values: "all", "byMe", "byAll"
   const isSuperUser = user && user.username === SUPER_USER_USERNAME;
@@ -152,20 +154,20 @@ const InstrumentList = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingInstrument(true);
-  
+
       try {
         const allInstruments = await getAllInstruments();
         setInstruments(allInstruments);
-  
+
         // Retrieve cached statuses or initialize an empty object
         const cachedStatuses = JSON.parse(localStorage.getItem('instrumentStatusesCache')) || {};
         let statusMap = { ...cachedStatuses };
-  
+
         // Identify instruments with "Unknown" status or not in the cache
         const instrumentsToUpdate = allInstruments.filter(instrument =>
           !statusMap[instrument._id] || statusMap[instrument._id] === "Unknown"
         );
-  
+
         // Fetch statuses only for instruments needing an update
         if (instrumentsToUpdate.length > 0) {
           const updatedStatuses = await Promise.all(
@@ -173,15 +175,15 @@ const InstrumentList = () => {
               getInstrumentStatus(instrument._id)
             )
           );
-  
+
           updatedStatuses.forEach((status, index) => {
             const currentStatus = status.availability ? "Available" : "Booked";
             statusMap[instrumentsToUpdate[index]._id] = currentStatus;
           });
         }
-  
+
         setInstrumentStatuses(statusMap);
-  
+
         // Update the cache with the latest statuses
         localStorage.setItem('instrumentStatusesCache', JSON.stringify(statusMap));
       } catch (error) {
@@ -190,7 +192,7 @@ const InstrumentList = () => {
         setIsLoadingInstrument(false);
       }
     };
-  
+
     fetchData();
   }, [bookingMade]);
 
@@ -248,7 +250,7 @@ const InstrumentList = () => {
       </>
     );
   };
-  
+
 
   // const sortInstruments = (instrumentsToSort) => {
   //   return [...instrumentsToSort].sort((a, b) => {
@@ -287,7 +289,7 @@ const InstrumentList = () => {
       if (!user) {
         return 0;
       }
-  
+
       const aIsBookedByUser = a.bookedBy && a.bookedBy._id === user.id;
       const bIsBookedByUser = b.bookedBy && b.bookedBy._id === user.id;
       const aIsBooked = !!a.bookedBy;
@@ -300,31 +302,31 @@ const InstrumentList = () => {
       if (aCondition && !bCondition) {
         return -1;
       }
-  
+
       if (!aCondition && bCondition) {
         return 1;
       }
-  
+
       if (aIsBookedByUser && !bIsBookedByUser) {
         return -1;
       }
-  
+
       if (!aIsBookedByUser && bIsBookedByUser) {
         return 1;
       }
-  
+
       if (aIsBooked && !bIsBooked) {
         return -1;
       }
-  
+
       if (!aIsBooked && bIsBooked) {
         return 1;
       }
-  
+
       return 0;
     });
   };
-  
+
 
   const toggleInstrumentDetails = (id) => {
     if (expandedInstrumentId === id) {
@@ -411,7 +413,7 @@ const InstrumentList = () => {
     }
   };
 
-const updateInstrumentStates = (updatedInstrument, id) => {
+  const updateInstrumentStates = (updatedInstrument, id) => {
     // Update instrumentStatuses
     setInstrumentStatuses((prevStatuses) => ({
       ...prevStatuses,
@@ -597,6 +599,65 @@ const updateInstrumentStates = (updatedInstrument, id) => {
     }
   };
 
+  const handleViewWaitingForApproval = () => {
+    if (!user) {
+      console.log("You must be logged in to view instruments in pending approval state.");
+      setPromptLoginForViewing(true);
+      return;
+    }
+    setPendingApprovalMode(true);
+    setViewMode("byPendingApproval");
+    try {
+      // Filter the instruments that are waiting for admin approval
+      const waitingForApprovalInstruments = instruments.filter(
+        (instrument) => instrument.waiting && !instrument.returning
+      );
+      //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+      setFilteredInstruments(sortInstruments(waitingForApprovalInstruments));
+
+      // Add console log to check all instruments booked by any user
+      console.log("Instruments in pending approval state:", waitingForApprovalInstruments);
+
+      // Add console log to check which instruments are selected
+      console.log(
+        "Instruments selected in waitingForApprovalInstruments:",
+        waitingForApprovalInstruments
+      );
+    } catch (error) {
+      console.error("Error fetching instruments booked by all users:", error);
+    }
+  };
+
+  const handleViewWaitingForRelease = () => {
+    if (!user) {
+      console.log("You must be logged in to view instruments in pending approval state.");
+      setPromptLoginForViewing(true);
+      return;
+    }
+    setPendingReleaseMode(true);
+    setViewMode("byReleaseApproval");
+    try {
+      // Filter the instruments that are waiting for admin approval
+      const waitingForReleaseInstruments = instruments.filter(
+        (instrument) => pendingReleaseInstruments.includes(instrument._id) || instrument.releasing
+      );
+      //setInstrumentsBookedByMe(sortInstruments(instrumentsBookedBy));
+      setFilteredInstruments(sortInstruments(waitingForReleaseInstruments));
+
+      // Add console log to check all instruments booked by any user
+      console.log("Instruments in pending Release state:", waitingForReleaseInstruments);
+
+      // Add console log to check which instruments are selected
+      console.log(
+        "Instruments selected in waitingForApprovalInstruments:",
+        waitingForReleaseInstruments
+      );
+    } catch (error) {
+      console.error("Error fetching instruments in pending release state:", error);
+    }
+  };
+
+
   const handleWaitingClick = async (id) => {
     if (user && user.username === "super user") {
       setCurrentInstrumentId(id);
@@ -763,22 +824,22 @@ const updateInstrumentStates = (updatedInstrument, id) => {
     if (selectedCategory && instrument.type !== selectedCategory) {
       return null;
     }
-  // Determine the status of the instrument
-  let status = instrumentStatuses[instrument._id];
-  if (instrument.bookedBy === "N/A" || instrument.bookedBy === null) {
-    status = "Available";
-  }
-  if (instrument.bookedBy) {
-    instrumentStatuses[instrument._id] = "Booked";
-  }
+    // Determine the status of the instrument
+    let status = instrumentStatuses[instrument._id];
+    if (instrument.bookedBy === "N/A" || instrument.bookedBy === null) {
+      status = "Available";
+    }
+    if (instrument.bookedBy) {
+      instrumentStatuses[instrument._id] = "Booked";
+    }
     return (
-      
+
       <div
         key={instrument._id}
         style={{
           marginBottom: "10px",
           border:
-          status === "Booked" &&
+            status === "Booked" &&
               instrument.bookedBy
               ? "1px solid #014C8C"
               : status === "Available"
@@ -795,7 +856,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             color: "#014C8C",
           }}
         >
-        {/* {instrument.description} */}
+          {/* {instrument.description} */}
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Category:{" "}
@@ -811,12 +872,12 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
           Model:{" "}
-            <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-              {instrument.model}
-            </span>
-          </div>
+          <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+            {instrument.model}
+          </span>
+        </div>
         <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-         Equipment Description:{" "}
+          Equipment Description:{" "}
           <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
             {instrument.equipment}
           </span>
@@ -826,21 +887,21 @@ const updateInstrumentStates = (updatedInstrument, id) => {
           <span
             style={{
               color:
-              status === "Booked"
+                status === "Booked"
                   ? "red"
                   : status === "Available"
                     ? "green"
                     : "black",
               fontWeight:
-              status === "Booked" ||
-              status === "Available"
+                status === "Booked" ||
+                  status === "Available"
                   ? "bold"
                   : "normal",
             }}
           >
             {status
               ? `${status}`
-              : "Unknown"}   
+              : "Unknown"}
           </span>
         </div>
         <div>
@@ -1130,6 +1191,44 @@ const updateInstrumentStates = (updatedInstrument, id) => {
           Booked By All Users
         </button>
 
+        <button
+          onClick={() => {
+            console.log("JSX: Waiting for Approval button clicked");
+            handleViewWaitingForApproval(); // Create this function to handle the filter
+          }}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#ffc107", // Use your preferred color
+            color: "green",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1.0em",
+          }}
+        >
+          Waiting for Approval
+        </button>
+
+        <button
+          onClick={() => {
+            console.log("JSX: Waiting for Approval button clicked");
+            handleViewWaitingForRelease(); // Create this function to handle the filter
+          }}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#ffc107", // Use your preferred color
+            color: "red",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1.0em",
+          }}
+        >
+          Waiting for Release Approval
+        </button>
+
         {/* Spinner shown when data is loading */}
         {isLoadingInstrument && (
           <div className="spinner-center">
@@ -1155,7 +1254,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
             const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
-            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1167,7 +1266,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
               matchesEquipment ||
               matchesModel ||
               matchesLocation ||
-              matchesProject || 
+              matchesProject ||
               matchesBookedby
             );
           })
@@ -1211,7 +1310,7 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
             const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
-            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1265,7 +1364,111 @@ const updateInstrumentStates = (updatedInstrument, id) => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
             const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
-            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;            
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
+            const matchesBookedby = instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+              false;
+            return (
+              matchesDescription ||
+              matchesEquipment ||
+              matchesModel ||
+              matchesLocation ||
+              matchesProject ||
+              matchesBookedby
+            );
+          })
+          .filter((instrument) => instrument.bookedBy)
+          .map((instrument) => renderInstrumentDetails(instrument))}
+      </div>
+    );
+  };
+
+  const PendingApprovalView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+    return (
+      <div>
+        <button
+          onClick={handleViewAllInstruments}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#007BFF",
+            color: "white",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1.0em", // Increased font size
+          }}
+        >
+          View All Instruments
+        </button>
+        {filteredInstruments
+          .filter((instrument) => {
+            const searchTermLC = searchTerm.toLowerCase();
+            //const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            const matchesDescription = instrument.type.toLowerCase().includes(searchTermLC);
+            const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+            const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+            const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const locationSearchTermLC = locationSearchTerm.toLowerCase();
+            const projectSearchTermLC = projectSearchTerm.toLowerCase();
+            const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
+            const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
+            const matchesBookedby = instrument.bookedBy ?
+              (typeof instrument.bookedBy === "object" ?
+                instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
+                instrument.bookedBy.toLowerCase().includes(bookedbySearchTermLC)) :
+              false;
+            return (
+              matchesDescription ||
+              matchesEquipment ||
+              matchesModel ||
+              matchesLocation ||
+              matchesProject ||
+              matchesBookedby
+            );
+          })
+          .filter((instrument) => instrument.bookedBy)
+          .map((instrument) => renderInstrumentDetails(instrument))}
+      </div>
+    );
+  };
+
+  const ReleaseApprovalView = ({ searchTerm, equipmentSearchTerm, modelSearchTerm, locationSearchTerm, projectSearchTerm, bookedbySearchTerm, handleViewAllInstruments, filteredInstruments }) => {
+    return (
+      <div>
+        <button
+          onClick={handleViewAllInstruments}
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#007BFF",
+            color: "white",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1.0em", // Increased font size
+          }}
+        >
+          View All Instruments
+        </button>
+        {filteredInstruments
+          .filter((instrument) => {
+            const searchTermLC = searchTerm.toLowerCase();
+            //const matchesDescription = instrument.description.toLowerCase().includes(searchTermLC);
+            const matchesDescription = instrument.type.toLowerCase().includes(searchTermLC);
+            const equipmentSearchTermLC = equipmentSearchTerm.toLowerCase();
+            const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
+            const modelSearchTermLC = modelSearchTerm.toLowerCase();
+            const locationSearchTermLC = locationSearchTerm.toLowerCase();
+            const projectSearchTermLC = projectSearchTerm.toLowerCase();
+            const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
+            const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
+            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
                 instrument.bookedBy.username.toLowerCase().includes(bookedbySearchTermLC) :
@@ -1292,8 +1495,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
         <>
           <h1 style={{ fontWeight: "bold" }}>Instruments List</h1>
           <div style={{ display: 'flex' }}>
-          <div className="category-container" style={{ width: '25%' /* additional styling for category list */ }}>
-            {renderCategoryButtons()}
+            <div className="category-container" style={{ width: '25%' /* additional styling for category list */ }}>
+              {renderCategoryButtons()}
             </div>
             <div style={{ width: '95%' /* additional styling for the rest of the content */ }}>
               <div
@@ -1398,6 +1601,29 @@ const updateInstrumentStates = (updatedInstrument, id) => {
                   filteredInstruments={filteredInstruments}
                 />
               )}
+              {viewMode === "byPendingApproval" && (
+                <PendingApprovalView
+                  searchTerm={searchTerm}
+                  equipmentSearchTerm={equipmentSearchTerm}
+                  modelSearchTerm={modelSearchTerm}
+                  locationSearchTerm={locationSearchTerm}
+                  projectSearchTerm={projectSearchTerm}
+                  handleViewAllInstruments={handleViewAllInstruments}
+                  filteredInstruments={filteredInstruments}
+                />
+              )}
+
+              {viewMode === "byReleaseApproval" && (
+                <ReleaseApprovalView
+                  searchTerm={searchTerm}
+                  equipmentSearchTerm={equipmentSearchTerm}
+                  modelSearchTerm={modelSearchTerm}
+                  locationSearchTerm={locationSearchTerm}
+                  projectSearchTerm={projectSearchTerm}
+                  handleViewAllInstruments={handleViewAllInstruments}
+                  filteredInstruments={filteredInstruments}
+                />
+              )}
               {viewMode === "all" && (
                 <AllInstrumentsView
                   searchTerm={searchTerm}
@@ -1430,8 +1656,8 @@ const updateInstrumentStates = (updatedInstrument, id) => {
       />
     </div>
   );
-  
-  
+
+
 };
 
 export default InstrumentList;
