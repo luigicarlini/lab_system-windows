@@ -26,6 +26,7 @@ const InstrumentList = () => {
   const [instrumentStatuses, setInstrumentStatuses] = useState({});
   const { user } = useUserContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [instrumentInfo, setInstrumentInfo] = useState(null); // Define instrumentInfo
   const [selectedInstrumentId, setSelectedInstrumentId] = useState(null);
   const [bookingMade, setBookingMade] = useState(false);
   const [expandedInstrumentId, setExpandedInstrumentId] = useState(null);
@@ -55,6 +56,8 @@ const InstrumentList = () => {
   const [currentInstrumentId, setCurrentInstrumentId] = useState(null);
   const [modalContext, setModalContext] = useState(null); // 'waiting' , 'releasing' or 'returning'
   const [selectedCategory, setSelectedCategory] = useState(null); //State for Selected Category: Add a state to track the currently selected category.
+  const [cancelBookingLoading, setCancelBookingLoading] = useState(false);
+  // const [releaseLoading, setReleaseLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,14 +102,14 @@ const InstrumentList = () => {
         if (locationSearchTerm) {
           const locationSearchTermLC = locationSearchTerm.toLowerCase();
           filtered = filtered.filter((instrument) =>
-            instrument.location.toLowerCase().includes(locationSearchTermLC)
+          instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC)
           );
         }
 
         if (projectSearchTerm) {
           const projectSearchTermLC = projectSearchTerm.toLowerCase();
           filtered = filtered.filter((instrument) =>
-            instrument.project.toLowerCase().includes(projectSearchTermLC)
+          instrument.project && instrument.project.toLowerCase().includes(projectSearchTermLC)
           );
         }
 
@@ -336,7 +339,7 @@ const InstrumentList = () => {
     }
   };
 
-  const handleBookInstrument = (id) => {
+  const handleBookInstrument = (id, instrumentInfo) => {
     if (!user) {
       console.log("You must be logged in to book an instrument.");
       setPromptLoginForInstrumentId(id);
@@ -345,6 +348,7 @@ const InstrumentList = () => {
     console.log("Attempting to book instrument with ID:", id);
     setSelectedInstrumentId(id);
     setIsModalOpen(true);
+    setInstrumentInfo(instrumentInfo); // Set instrumentInfo
   };
 
   const handleBookingSubmit = async (bookingData) => {
@@ -491,7 +495,7 @@ const InstrumentList = () => {
 
   const handleCancelBooking = async (id) => {
     try {
-      setIsLoading(true);
+      setCancelBookingLoading(true);
       await releaseInstrument(user.id, id);
       await markInstrumentAsCancelBooking(id, false, false);
       const updatedInstrument = await getInstrumentStatus(id);
@@ -504,9 +508,10 @@ const InstrumentList = () => {
     } catch (error) {
       console.error("Failed to cancel instrument:", error);
     } finally {
-      setIsLoading(false);
+      setCancelBookingLoading(false);
     }
   };
+  
 
   const handleRejectInstrument = async (id) => {
     try {
@@ -658,31 +663,38 @@ const InstrumentList = () => {
   };
 
 
-  const handleWaitingClick = async (id) => {
+  const handleWaitingClick = async (id, InstrumentInfo) => {
     if (user && user.username === "super user") {
       setCurrentInstrumentId(id);
       setModalContext('waiting');
       setIsLocationModalOpen(true);
+
+      // Set instrumentInfo if available
+      setInstrumentInfo(InstrumentInfo); // Replace updatedInstrument with the actual data
     } else {
       console.log("Only the super user can perform this action.");
     }
   };
 
-  const handleReleasingClick = async (id) => {
+  const handleReleasingClick = async (id, InstrumentInfo) => {
     if (user && user.username === "super user") {
       setCurrentInstrumentId(id);
       setModalContext('releasing');
       setIsLocationModalOpen(true);
+      // Set instrumentInfo if available
+      setInstrumentInfo(InstrumentInfo); // Replace updatedInstrument with the actual data
     } else {
       console.log("Only the super user can perform this action.");
     }
   };
 
-  const handleReturningClick = async (id) => {
+  const handleReturningClick = async (id, InstrumentInfo) => {
     if (user && user.username === "super user") {
       setCurrentInstrumentId(id);
       setModalContext('returning');
       setIsLocationModalOpen(true);
+      // Set instrumentInfo if available
+      setInstrumentInfo(InstrumentInfo); // Replace updatedInstrument with the actual data
     } else {
       console.log("Only the super user can perform this action.");
     }
@@ -714,8 +726,20 @@ const InstrumentList = () => {
         console.log(`(Releasing) : Submitting location for instrument ID: ${currentInstrumentId}`);
         await releaseInstrument(user.id, currentInstrumentId);
         await markInstrumentAsReleased(currentInstrumentId, false, location, locationRoom);
+
         const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
+
+        console.log("Before updateInstrumentStates: Current Instrument ID:", currentInstrumentId);
+        console.log("updateInstrumentStates: Updated Instrument:", updatedInstrument);
+
         updateInstrumentStates(updatedInstrument, currentInstrumentId);
+
+        // Set instrumentInfo if available
+        setInstrumentInfo(updatedInstrument); // Replace updatedInstrument with the actual data
+        console.log("After setInstrumentInfo: Current Instrument ID:", currentInstrumentId);
+        console.log("After setInstrumentInfo: Updated Instrument:", updatedInstrument);
+
+
         setPendingReleaseInstruments((prevReleasing) => prevReleasing.filter((instrId) => instrId !== currentInstrumentId));
         setIsLoading(false);
         // Additional logic for handling 'releasing' context
@@ -957,8 +981,8 @@ const InstrumentList = () => {
               {instrument.due_calibration}
             </div>
             <div>
-              <span style={{ fontWeight: "bold" }}>materiale ericsson: </span>
-              {instrument.due_calibration}
+              <span style={{ fontWeight: "bold" }}>ownership: </span>
+              {instrument.materiale_ericsson}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>location: </span>
@@ -974,7 +998,7 @@ const InstrumentList = () => {
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>ip_address: </span>
-              {instrument.materiale_ericsson}
+              {instrument.ip_address}
             </div>
             <div>
               <span style={{ fontWeight: "bold" }}>reference_people: </span>
@@ -998,7 +1022,7 @@ const InstrumentList = () => {
         {/* Book Button */}
         {!instrument.returning && !instrument.waiting && !instrument.bookedUntil && (instrumentStatuses[instrument._id] === "Available" || instrument.bookedBy === "N/A" || instrument.bookedBy === null) && (
           <button
-            onClick={() => handleBookInstrument(instrument._id)}
+            onClick={() => handleBookInstrument(instrument._id, instrument)}
             className="book-button"
           >
             Request for Booking
@@ -1011,7 +1035,7 @@ const InstrumentList = () => {
           </div>
         )}
 
-        {/* Release Button */}
+       {/* Release Button */}
         {/* {console.log("Debug - Instrument Status: ", instrumentStatuses[instrument._id])}
             {console.log("Debug - Booked By: ", instrument.bookedBy)}
             {console.log("Debug - User: ", user)}
@@ -1032,7 +1056,7 @@ const InstrumentList = () => {
               {/* Check if the instrument is in the pendingReleaseInstruments array */}
               {(pendingReleaseInstruments.includes(instrument._id) || instrument.releasing) ? (
                 <button
-                  onClick={() => handleReleasingClick(instrument._id)}
+                  onClick={() => handleReleasingClick(instrument._id, instrument)}
                   className="pending-release"
                 >
                   Release pending admin approval...
@@ -1056,11 +1080,11 @@ const InstrumentList = () => {
             </div>
           )}
 
-        {instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy && user && !instrument.returning && instrument.waiting &&
+{instrumentStatuses[instrument._id] === "Booked" && instrument.bookedBy && user && !instrument.returning && instrument.waiting &&
           (instrument.bookedBy._id === user.id ||
             instrument.bookedBy === user.id) && (
             <div>
-              {isLoading && (
+              {cancelBookingLoading && (
                 <div className="loading-container">
                   <div className="spinner"></div>
                   <span className="loading-text">Cancel Booking...</span>
@@ -1087,7 +1111,7 @@ const InstrumentList = () => {
         {/* Waiting to take the instrument Button */}
         {instrument.waiting && !instrument.returning && (
           <button
-            onClick={() => handleWaitingClick(instrument._id)}
+            onClick={() => handleWaitingClick(instrument._id, instrument)}
             className="waiting-button"
           >
             {/* Waiting to take the instrument */}
@@ -1098,7 +1122,7 @@ const InstrumentList = () => {
         {/* Instrument is returning back Button */}
         {!instrument.waiting && instrument.returning && (
           <button
-            onClick={() => handleReturningClick(instrument._id)}
+            onClick={() => handleReturningClick(instrument._id, instrument)}
             className="returning-button"
           >
             {/* Instrument is returning back */}
@@ -1253,7 +1277,8 @@ const InstrumentList = () => {
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesEquipment = instrument.equipment.toLowerCase().includes(equipmentSearchTermLC);
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            //const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesLocation = instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC);
             const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
@@ -1309,7 +1334,8 @@ const InstrumentList = () => {
             const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            //const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesLocation = instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC);
             const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
@@ -1363,7 +1389,8 @@ const InstrumentList = () => {
             const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            //const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesLocation = instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC);
             const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
@@ -1415,7 +1442,8 @@ const InstrumentList = () => {
             const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            //const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesLocation = instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC);
             const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
@@ -1467,7 +1495,8 @@ const InstrumentList = () => {
             const projectSearchTermLC = projectSearchTerm.toLowerCase();
             const bookedbySearchTermLC = bookedbySearchTerm ? bookedbySearchTerm.toLowerCase() : "";
             const matchesModel = instrument.model.toLowerCase().includes(modelSearchTermLC);
-            const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            //const matchesLocation = instrument.location.toLowerCase().includes(locationSearchTermLC);
+            const matchesLocation = instrument.location && instrument.location.toLowerCase().includes(locationSearchTermLC);
             const matchesProject = instrument.project ? instrument.project.toLowerCase().includes(projectSearchTermLC) : false;
             const matchesBookedby = instrument.bookedBy ?
               (typeof instrument.bookedBy === "object" ?
@@ -1647,12 +1676,14 @@ const InstrumentList = () => {
         onRequestClose={() => setIsModalOpen(false)}
         onSubmitBooking={handleBookingSubmit}
         setIsModalOpen={setIsModalOpen}
+        instrumentInfo={instrumentInfo} // Pass instrumentInfo to BookingModal
       />
       <LocationModal
         isOpen={isLocationModalOpen}
         onRequestClose={handleModalClose}
         onSubmitLocation={handleLocationSubmit}
         currentInstrumentId={currentInstrumentId}
+        instrumentInfo={instrumentInfo} // Pass instrumentInfo to LocationModal
       />
     </div>
   );

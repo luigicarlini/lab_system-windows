@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./LocationModal.css"; // Import the CSS file
 
-const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstrumentId }) => {
+const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstrumentId, instrumentInfo }) => {
   const [location, setLocation] = useState('');
   const [locationRoom, setLocationRoom] = useState('MAG.BETE'); // Default to the first option
   const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -30,12 +30,54 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
     }
   };
 
+  useEffect(() => {
+    if (instrumentInfo) {
+      setLocationRoom(instrumentInfo.room); // Set location room from instrumentInfo
+    }
+  }, [instrumentInfo]);
+
   return (
     <Modal isOpen={isOpen} onRequestClose={onRequestClose} className="modal-content">
-      <h2 className="modal-header" style={{ fontWeight: 'bold' }}>Specify Instrument Location</h2>
-      {showErrorMessage && (
-        <div className="error-message">You must specify the instrument location</div>
-      )}
+      <div style={{ border: "2px solid #014C8C", padding: "10px", borderRadius: "20px", display: "flex", flexDirection: "column", marginTop: "1px" }}>
+        <div className="instrument-frame">
+          {instrumentInfo ? (
+            <>
+              <h2 className="modal-header" style={{ fontWeight: 'bold', color: 'green', marginBottom: "10px", paddingTop: "10px", marginTop: "45px"}}>
+              You are performing an action on the Instrument:
+              </h2>
+              {showErrorMessage && (
+                <div className="error-message">You must specify the instrument location</div>
+              )}
+              <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                Category:{" "}
+                <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                  {instrumentInfo.type}
+                </span>
+              </div>
+              <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                Equipment name:{" "}
+                <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                  {instrumentInfo.description}
+                </span>
+              </div>
+              <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                Model:{" "}
+                <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                  {instrumentInfo.model}
+                </span>
+              </div>
+              <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                Equipment Description:{" "}
+                <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                  {instrumentInfo.equipment}
+                </span>
+              </div>
+            </>
+          ) : (
+            <p>Loading instrument details...</p>
+          )}
+        </div>
+      </div>
       <div className="modal-body">
         <label className="modal-label" style={{ fontWeight: 'bold' }}>
           Room:
@@ -67,6 +109,7 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
       </div>
     </Modal>
   );
+  
 };
 
 export default LocationModal;
