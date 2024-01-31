@@ -443,6 +443,7 @@ const InstrumentList = () => {
               rejecting: updatedInstrument.rejecting || null,
               releasing: updatedInstrument.releasing || null,
               rejectingapproval: updatedInstrument.rejectingapproval || null,
+              project: updatedInstrument.project || null,
             }
             : instrument
         )
@@ -467,6 +468,7 @@ const InstrumentList = () => {
             rejecting: updatedInstrument.rejecting || null,
             releasing: updatedInstrument.releasing || null,
             rejectingapproval: updatedInstrument.rejectingapproval || null,
+            project: updatedInstrument.project || null,
           }
           : instrument
       )
@@ -487,6 +489,7 @@ const InstrumentList = () => {
             rejecting: updatedInstrument.rejecting || null,
             releasing: updatedInstrument.releasing || null,
             rejectingapproval: updatedInstrument.rejectingapproval || null,
+            project: updatedInstrument.project || null,
           }
           : instrument
       )
@@ -703,7 +706,7 @@ const InstrumentList = () => {
   //Handle Location Submission:
   //handleLocationSubmit is a function to handle the submission of location details from the LocationModal. 
   //This function should perform the necessary actions (such as updating the instrument's location) after the super user submits the location details.
-  const handleLocationSubmit = async ({ location, locationRoom }) => {
+  const handleLocationSubmit = async ({ location, locationRoom, project }) => {
     try {
       if (modalContext === 'waiting') {
         // Logic from handleWaitingClick
@@ -715,7 +718,7 @@ const InstrumentList = () => {
         console.log(`(Waiting) : Submitting location for instrument ID: ${currentInstrumentId}`);
         console.log("markInstrumentAsWaiting with location:", location.location);
 
-        await markInstrumentAsWaiting(currentInstrumentId, false, location, locationRoom);
+        await markInstrumentAsWaiting(currentInstrumentId, false, location, locationRoom, project);
         const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
         updateInstrumentStates(updatedInstrument, currentInstrumentId);
         // Additional logic for handling 'waiting' context
@@ -725,7 +728,7 @@ const InstrumentList = () => {
         setIsLoading(true);
         console.log(`(Releasing) : Submitting location for instrument ID: ${currentInstrumentId}`);
         await releaseInstrument(user.id, currentInstrumentId);
-        await markInstrumentAsReleased(currentInstrumentId, false, location, locationRoom);
+        await markInstrumentAsReleased(currentInstrumentId, false, location, locationRoom, project);
 
         const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
 
@@ -754,7 +757,7 @@ const InstrumentList = () => {
         );
         console.log(`(Returning) : Submitting location for instrument ID: ${currentInstrumentId}`);
         //await markInstrumentAsReturning(currentInstrumentId, false, location.location, location.locationRoom);
-        await markInstrumentAsReturning(currentInstrumentId, false, location, locationRoom);
+        await markInstrumentAsReturning(currentInstrumentId, false, location, locationRoom, project);
         const updatedInstrument = await getInstrumentStatus(currentInstrumentId);
         updateInstrumentStates(updatedInstrument, currentInstrumentId);
         console.log("Instrument released successfully!");

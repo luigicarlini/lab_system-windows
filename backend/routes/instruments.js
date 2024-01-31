@@ -34,7 +34,7 @@ router.post("/book/:id", async (req, res) => {
   try {
     //const { userid, bookedBy, bookedFrom, bookedUntil } = req.body;
     // Extracting booking details including the new location from the request body
-    const { userid, bookedBy, bookedFrom, bookedUntil, location } = req.body;
+    const { userid, bookedBy, bookedFrom, bookedUntil, location, project } = req.body;
 
     console.log("Complete req.body:", req.body);
     const instrumentId = req.params.id;
@@ -48,6 +48,7 @@ router.post("/book/:id", async (req, res) => {
     console.log("Booked until:", req.body.bookedUntil);
     console.log("Instrument ID:", instrumentId);
     console.log("location:", req.body.location);
+    console.log("location:", req.body.project);
 
 
     console.log(`Looking for user with ID: ${req.body.userid}`);
@@ -82,6 +83,7 @@ router.post("/book/:id", async (req, res) => {
         instrument.bookedBy = req.body.userid;
         instrument.bookedFrom = req.body.bookedFrom; // Adjusted the property names
         instrument.bookedUntil = req.body.bookedUntil; // Adjusted the property names
+        instrument.project = req.body.project;
         console.log("Booked by user ID:", instrument.bookedBy); // Using the user id
         console.log("Booked from:", instrument.bookedFrom);
         console.log("Booked until:", instrument.bookedUntil);
@@ -170,13 +172,16 @@ router.post('/returning/:id', async (req, res) => {
     console.log("backend instrument.returning:", req.body.returning);
     console.log("backend instrument.location_inside_room:", req.body.location);
     console.log("backend instrument.location:", req.body.locationRoom);
+    console.log("backend instrument.project:", req.body.project);
 
     instrument.returning = req.body.returning; // This should be set according to what was passed in the request body
     instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
+    instrument.project = req.body.project;
     console.log("backend instrument.returning:", instrument.returning);
     console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
     console.log("backend instrument.location:", instrument.location);
+    console.log("backend instrument.project:", instrument.project);
 
 
     //instrument.waiting = false;
@@ -201,14 +206,19 @@ router.post('/waiting/:id', async (req, res) => {
     console.log("backend instrument.returning:", req.body.returning);
     console.log("backend instrument.location_inside_room:", req.body.locationRoom);
     console.log("backend instrument.location:", req.body.location);
+    console.log("backend instrument.project:", req.body.project);
+
 
     instrument.waiting = req.body.waiting;
     instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
+    instrument.project = req.body.project;
     //instrument.waiting = req.body.waiting !== undefined ? req.body.waiting : true;
     console.log("backend instrument.waiting:", instrument.waiting);
     console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
     console.log("backend instrument.location:", instrument.location);
+    console.log("backend instrument.project:", instrument.project);
+
 
 
     instrument.returning = false;
@@ -263,14 +273,19 @@ router.post('/releasing/:id', async (req, res) => {
     console.log("backend instrument.returning:", req.body.returning);
     console.log("backend instrument.location_inside_room:", req.body.locationRoom);
     console.log("backend instrument.location:", req.body.location);
+    console.log("backend instrument.project:", req.body.project);
 
 
     instrument.releasing = req.body.releasing;
     instrument.location_inside_room = req.body.location;
     instrument.location = req.body.locationRoom;
+    instrument.project = req.body.project;
+
     console.log("backend instrument.releasing:", instrument.releasing);
     console.log("backend instrument.location_inside_room:", instrument.location_inside_room);
     console.log("backend instrument.location:", instrument.location);
+    console.log("backend instrument.project:", instrument.project);
+
 
     await instrument.save();
     res.status(200).json({ message: `User marked as ${instrument.releasing ? 'releasing for' : 'not releasing for'} instrument`, instrument });

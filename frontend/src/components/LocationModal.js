@@ -4,6 +4,7 @@ import "./LocationModal.css"; // Import the CSS file
 
 const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstrumentId, instrumentInfo }) => {
   const [location, setLocation] = useState('');
+  const [project, setProject] = useState('');
   const [locationRoom, setLocationRoom] = useState('MAG.BETE'); // Default to the first option
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
@@ -17,7 +18,7 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
       setShowErrorMessage(true);
     } else {
       console.log(`LocationModal: Submitting location for instrument ID: ${currentInstrumentId}`);
-      onSubmitLocation({ location, locationRoom });
+      onSubmitLocation({ location, locationRoom, project });
       onRequestClose();
       setShowErrorMessage(false);
     }
@@ -25,6 +26,13 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
 
   const handleInputChange = (e) => {
     setLocation(e.target.value);
+    if (showErrorMessage) {
+      setShowErrorMessage(false);
+    }
+  };
+
+  const handleInputProject = (e) => {
+    setProject(e.target.value);
     if (showErrorMessage) {
       setShowErrorMessage(false);
     }
@@ -78,6 +86,7 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
           )}
         </div>
       </div>
+      <br />
       <div className="modal-body">
         <label className="modal-label" style={{ fontWeight: 'bold' }}>
           Room:
@@ -99,6 +108,17 @@ const LocationModal = ({ isOpen, onRequestClose, onSubmitLocation, currentInstru
             placeholder="Insert the location inside the room here..."
             value={location}
             onChange={handleInputChange}
+            className="location-input"
+          />
+        </label>
+        <br />
+        <label className="modal-label" style={{ fontWeight: 'bold' }}>
+          Project:
+          <input
+            type="text"
+            name="Insert the project here..."
+            value={project}
+            onChange={handleInputProject}
             className="location-input"
           />
         </label>

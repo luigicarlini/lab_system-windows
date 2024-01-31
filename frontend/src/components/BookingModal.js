@@ -31,6 +31,7 @@ const BookingModal = ({
     bookedFrom: "",
     bookedUntil: "",
     location: availableLocations[0],
+    project: "",
   });
 
   const navigate = useNavigate();
@@ -105,42 +106,42 @@ const BookingModal = ({
       ) : (
         <>
           <br />
-            {/* Display instrument details from InstrumentInfo inside a blue frame */}
-            <div style={{ border: "2px solid #014C8C", padding: "10px", borderRadius: "5px" }}>
+          {/* Display instrument details from InstrumentInfo inside a blue frame */}
+          <div style={{ border: "2px solid #014C8C", padding: "10px", borderRadius: "5px" }}>
             <p style={{ fontWeight: "bold", fontSize: "1.2em", color: "green" }}>
-                You are booking the instrument:
-              </p>
-              {instrumentInfo ? (
-                <>
-                  <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-                    Category:{" "}
-                    <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-                      {instrumentInfo.type}
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-                    Equipment name:{" "}
-                    <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-                      {instrumentInfo.description}
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-                    Model:{" "}
-                    <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-                      {instrumentInfo.model}
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
-                    Equipment Description:{" "}
-                    <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
-                      {instrumentInfo.equipment}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <p>Loading instrument details...</p>
-              )}
-            </div>
+              You are booking the instrument:
+            </p>
+            {instrumentInfo ? (
+              <>
+                <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                  Category:{" "}
+                  <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                    {instrumentInfo.type}
+                  </span>
+                </div>
+                <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                  Equipment name:{" "}
+                  <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                    {instrumentInfo.description}
+                  </span>
+                </div>
+                <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                  Model:{" "}
+                  <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                    {instrumentInfo.model}
+                  </span>
+                </div>
+                <div style={{ fontWeight: "bold", fontSize: "1.0em", color: "black" }}>
+                  Equipment Description:{" "}
+                  <span style={{ fontWeight: "bold", fontSize: "1.1em", color: "#014C8C" }}>
+                    {instrumentInfo.equipment}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p>Loading instrument details...</p>
+            )}
+          </div>
           <br />
           <label style={{ fontWeight: "bold", fontSize: "1.2em" }}>
             Booked from:
@@ -198,6 +199,16 @@ const BookingModal = ({
               from" before "Booking Until").
             </p>
           )}
+          <label style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+            Project:
+            <input
+              type="text"
+              name="project"
+              value={bookingData.project}
+              onChange={handleInputChange}
+              className="project-input"
+            />
+          </label>
           {error && (
             <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>
           )}
